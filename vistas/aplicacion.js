@@ -30,6 +30,73 @@ function irAlCampus() {
 }
 
 /**
+ * Muestra el formulario de registro de cliente
+ */
+function mostrarFormularioRegistro() {
+    $('#bloqueLogin').addClass('oculto');
+    $('#formularioRegistro').removeClass('oculto');
+    $('#mensajeError').hide();
+    $('#mensajeRegistro').hide();
+}
+
+/**
+ * Oculta y limpia el formulario de registro
+ */
+function ocultarFormularioRegistro() {
+    $('#formularioRegistro').addClass('oculto');
+    $('#bloqueLogin').removeClass('oculto');
+    $('#registroNombre').val('');
+    $('#registroCorreo').val('');
+    $('#registroUsuario').val('');
+    $('#registroPassword').val('');
+    $('#registroConfirmar').val('');
+    $('#mensajeRegistro').hide();
+}
+
+/**
+ * Registra un nuevo cliente
+ */
+function registrarCliente() {
+    const nombre = $('#registroNombre').val().trim();
+    const correo = $('#registroCorreo').val().trim();
+    const usuario = $('#registroUsuario').val().trim();
+    const password = $('#registroPassword').val().trim();
+    const confirmar = $('#registroConfirmar').val().trim();
+
+    if (!nombre || !correo || !usuario || !password || !confirmar) {
+        $('#mensajeRegistro').text('Complete todos los campos de registro').show();
+        return;
+    }
+
+    if (password !== confirmar) {
+        $('#mensajeRegistro').text('Las contrasenas no coinciden').show();
+        return;
+    }
+
+    fetch('controlador/ControladorRegistro.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, correo, usuario, password })
+    })
+    .then(res => res.json())
+    .then(respuesta => {
+        if (respuesta.status === 'ok') {
+            $('#mensajeRegistro').text(respuesta.mensaje).show();
+            $('#campoUsuario').val(usuario);
+            $('#campoPassword').val('');
+            setTimeout(() => {
+                ocultarFormularioRegistro();
+            }, 900);
+        } else {
+            $('#mensajeRegistro').text(respuesta.mensaje || 'No se pudo registrar').show();
+        }
+    })
+    .catch(() => {
+        $('#mensajeRegistro').text('Error al conectar con el servidor').show();
+    });
+}
+
+/**
  * Regresa a la vista de tarjetas principales del panel
  * y limpia el estado del formulario
  */
@@ -287,7 +354,11 @@ $(document).ready(function () {
     // Permitir login con Enter
     $('#campoUsuario, #campoPassword').keypress(function (evento) {
         if (evento.which === 13) {
-            $('#btnIngresar').click();
+            if (!$('#formularioRegistro').hasClass('oculto')) {
+                registrarCliente();
+            } else {
+                $('#btnIngresar').click();
+            }
         }
     });
 

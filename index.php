@@ -27,6 +27,8 @@
 
         <div class="caja-login">
 
+            <div id="bloqueLogin">
+
             <label class="etiqueta-input">USUARIO</label>
             <input type="text" id="campoUsuario" placeholder="Ingrese su usuario">
 
@@ -40,9 +42,33 @@
             </div>
 
             <button class="btn btn-primario" id="btnIngresar">Ingresar</button>
-            <button class="btn btn-secundario" onclick="irAlCampus()">Ir al Campus</button>
+            <button class="btn btn-secundario" onclick="mostrarFormularioRegistro()">Registrarme</button>
 
             <div id="mensajeError"></div>
+
+            </div>
+
+            <div id="formularioRegistro" class="oculto">
+                <label class="etiqueta-input">NOMBRE COMPLETO</label>
+                <input type="text" id="registroNombre" placeholder="Ingrese su nombre completo">
+
+                <label class="etiqueta-input">CORREO</label>
+                <input type="email" id="registroCorreo" placeholder="Ingrese su correo">
+
+                <label class="etiqueta-input">USUARIO</label>
+                <input type="text" id="registroUsuario" placeholder="Cree su usuario">
+
+                <label class="etiqueta-input">CONTRASENA</label>
+                <input type="password" id="registroPassword" placeholder="Cree su contrasena">
+
+                <label class="etiqueta-input">CONFIRMAR CONTRASENA</label>
+                <input type="password" id="registroConfirmar" placeholder="Repita su contrasena">
+
+                <button class="btn btn-primario" id="btnRegistrar" onclick="registrarCliente()">Crear cuenta</button>
+                <button class="btn btn-secundario" onclick="ocultarFormularioRegistro()">Cancelar</button>
+
+                <div id="mensajeRegistro"></div>
+            </div>
 
         </div>
 
