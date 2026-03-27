@@ -47,23 +47,20 @@ VALUES
      'Administrador Total', 'Activo', 'Administrador', 'Tiempo completo', CURDATE());
 
 -- ============================================================
--- Tabla de Planillas
+-- Tabla de Marcaciones (entrada/salida de trabajadores)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `planillas` (
+CREATE TABLE IF NOT EXISTS `marcaciones` (
     `id`                    INT AUTO_INCREMENT PRIMARY KEY,
-    `id_planilla`           VARCHAR(20) UNIQUE,
     `id_trabajador`         INT NOT NULL,
-    `periodo_inicio`        DATE NOT NULL,
-    `periodo_fin`           DATE NOT NULL,
-    `cantidad_horas`        DECIMAL(8, 2) NOT NULL,
-    `tarifa_hora`           DECIMAL(10, 2) NOT NULL,
-    `monto_total`           DECIMAL(12, 2) GENERATED ALWAYS AS (cantidad_horas * tarifa_hora) STORED,
-    `estado`                ENUM('Pendiente','Aprobada','Pagada','Cancelada') DEFAULT 'Pendiente',
-    `notas`                 TEXT,
+    `fecha_marcacion`       DATE NOT NULL,
+    `hora_entrada`          DATETIME NULL,
+    `hora_salida`           DATETIME NULL,
+    `estado`                ENUM('Abierta','Cerrada') DEFAULT 'Abierta',
     `creado_en`             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `actualizado_en`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE,
-    INDEX idx_trabajador (id_trabajador),
-    INDEX idx_periodo (periodo_inicio, periodo_fin),
-    INDEX idx_estado (estado)
+    UNIQUE KEY `uniq_trabajador_fecha` (`id_trabajador`, `fecha_marcacion`),
+    INDEX `idx_fecha_marcacion` (`fecha_marcacion`),
+    CONSTRAINT `fk_marcaciones_trabajador`
+        FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

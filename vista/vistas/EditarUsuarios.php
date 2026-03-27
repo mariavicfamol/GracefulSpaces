@@ -4,6 +4,12 @@ if (empty($_SESSION['usuario'])) {
     header('Location: Login.php');
     exit;
 }
+
+$rol = $_SESSION['usuario']['rol'] ?? '';
+if ($rol === 'Trabajador') {
+    header('Location: HomeAdminTotal.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">

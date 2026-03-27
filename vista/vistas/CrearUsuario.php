@@ -4,6 +4,13 @@ if (empty($_SESSION['usuario'])) {
     header('Location: Login.php');
     exit;
 }
+
+$rol = $_SESSION['usuario']['rol'] ?? '';
+if ($rol === 'Trabajador') {
+    header('Location: HomeAdminTotal.php');
+    exit;
+}
+
 $errorCrear  = $_SESSION['error_crear']  ?? '';
 $exitoCrear  = $_SESSION['exito_crear']  ?? '';
 unset($_SESSION['error_crear'], $_SESSION['exito_crear']);

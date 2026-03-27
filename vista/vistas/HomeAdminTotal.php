@@ -4,7 +4,10 @@ if (empty($_SESSION['usuario'])) {
     header('Location: Login.php');
     exit;
 }
+
 $usuario = $_SESSION['usuario'];
+$rol = $usuario['rol'] ?? '';
+$esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,6 +30,7 @@ $usuario = $_SESSION['usuario'];
         
         <nav class="menu-navegacion">
             <ul class="lista-menu">
+                <?php if ($rol !== 'Trabajador'): ?>
                 <li class="item-menu">
                     <a href="CrearUsuario.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg>
@@ -39,24 +43,23 @@ $usuario = $_SESSION['usuario'];
                         <span>Gestión de Usuarios</span>
                     </a>
                 </li>
+                <?php if ($esAdmin): ?>
                 <li class="item-menu">
-                    <a href="CrearPlanilla.php" class="enlace-menu">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
-                        <span>Crear Planilla</span>
+                    <a href="MarcacionesAdmin.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h3"></path><path d="M13 14h3"></path><path d="M8 18h3"></path></svg>
+                        <span>Registros de Marcación</span>
                     </a>
                 </li>
+                <?php endif; ?>
+                <?php endif; ?>
+                <?php if (in_array($rol, ['Trabajador', 'Supervisor'], true)): ?>
                 <li class="item-menu">
-                    <a href="DashboardPlanillas.php" class="enlace-menu">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                        <span>Dashboard de Planillas</span>
+                    <a href="HomeTrabajador.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Registrar Entradas y Salidas</span>
                     </a>
                 </li>
-                <li class="item-menu">
-                    <a href="EditarPlanillas.php" class="enlace-menu">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        <span>Gestión de Planillas</span>
-                    </a>
-                </li>
+                <?php endif; ?>
             </ul>
         </nav>
 

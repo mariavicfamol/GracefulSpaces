@@ -9,7 +9,20 @@ if (empty($_SESSION['usuario'])) {
     exit;
 }
 
+$rol = $_SESSION['usuario']['rol'] ?? '';
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
+
+if ($rol === 'Trabajador') {
+    if (in_array($accion, ['buscar', 'actualizar', 'darDeBaja'], true)) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['error' => true, 'mensaje' => 'No tienes permisos para gestionar usuarios.']);
+    } else {
+        http_response_code(403);
+        header('Location: ../vista/vistas/HomeAdminTotal.php');
+    }
+    exit;
+}
 
 // -------------------------------------------------------
 // BUSCAR usuario (GET o POST con ?accion=buscar)

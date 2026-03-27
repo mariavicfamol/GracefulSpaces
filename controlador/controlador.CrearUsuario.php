@@ -9,6 +9,14 @@ if (empty($_SESSION['usuario'])) {
     exit;
 }
 
+$rol = $_SESSION['usuario']['rol'] ?? '';
+if ($rol === 'Trabajador') {
+    http_response_code(403);
+    $_SESSION['error_crear'] = 'No tienes permisos para crear usuarios.';
+    header('Location: ../vista/vistas/HomeAdminTotal.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../vista/vistas/CrearUsuario.php');
     exit;
