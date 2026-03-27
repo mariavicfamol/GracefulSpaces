@@ -45,3 +45,25 @@ VALUES
     ('GS-2026-001', 'Admin', 'Sistema', 'admin@gracefulspaces.com',
      '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
      'Administrador Total', 'Activo', 'Administrador', 'Tiempo completo', CURDATE());
+
+-- ============================================================
+-- Tabla de Planillas
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `planillas` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `id_planilla`           VARCHAR(20) UNIQUE,
+    `id_trabajador`         INT NOT NULL,
+    `periodo_inicio`        DATE NOT NULL,
+    `periodo_fin`           DATE NOT NULL,
+    `cantidad_horas`        DECIMAL(8, 2) NOT NULL,
+    `tarifa_hora`           DECIMAL(10, 2) NOT NULL,
+    `monto_total`           DECIMAL(12, 2) GENERATED ALWAYS AS (cantidad_horas * tarifa_hora) STORED,
+    `estado`                ENUM('Pendiente','Aprobada','Pagada','Cancelada') DEFAULT 'Pendiente',
+    `notas`                 TEXT,
+    `creado_en`             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `actualizado_en`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE,
+    INDEX idx_trabajador (id_trabajador),
+    INDEX idx_periodo (periodo_inicio, periodo_fin),
+    INDEX idx_estado (estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
