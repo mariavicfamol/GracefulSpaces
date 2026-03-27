@@ -1,0 +1,119 @@
+:root {
+    --color-crema: #fdfaf5;
+    --color-verde-oliva: #556b2f;
+    --color-blanco: #ffffff;
+    --color-texto: #333333;
+}
+
+body {
+    background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('../../publico/imagenes/FondoLogin.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+header {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor-logo {
+    background: rgba(255,255,255,0.9);
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 56px;
+    height: 56px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    display: block;
+}
+
+.contenedor-principal {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.tarjeta {
+    background: var(--color-crema);
+    padding: 40px;
+    border-radius: 15px;
+    max-width: 450px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+h1 { 
+    color: var(--color-verde-oliva); 
+    font-size: 1.4rem; 
+}
+
+.grupo-entrada { 
+    text-align: left; 
+    margin-bottom: 15px; 
+}
+
+.grupo-entrada label { 
+    display: block; color: 
+    var(--color-verde-oliva); 
+    font-weight: 600; 
+    font-size: 0.8rem; 
+    font-family: 'Poppins', sans-serif;
+}
+
+.grupo-entrada input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+.boton-primario {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-verde-oliva);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+}
+
+.opciones-adicionales {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+.enlace-secundario { 
+    color: var(--color-verde-oliva); 
+    text-decoration: none; 
+    font-weight: 600; 
+    font-family: 'Poppins', sans-serif;
+}
+/* ── Mensajes de feedback ── */
+.mensaje-error {
+    background: #fdecea;
+    color: #c0392b;
+    border: 1px solid #e74c3c;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 0.87rem;
+    font-weight: 500;
+}
