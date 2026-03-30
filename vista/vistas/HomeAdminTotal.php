@@ -50,6 +50,18 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                         <span>Registros de Marcación</span>
                     </a>
                 </li>
+                <li class="item-menu">
+                    <a href="PlanillasAdmin.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 10h20"></path><path d="M7 14h3"></path><path d="M14 14h3"></path></svg>
+                        <span>Gestión de Planillas</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="ProyectosAdmin.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18"></path><path d="M3 12h18"></path><path d="M3 17h18"></path><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle></svg>
+                        <span>Gestión de Proyectos</span>
+                    </a>
+                </li>
                 <?php endif; ?>
                 <?php endif; ?>
                 <?php if (in_array($rol, ['Trabajador', 'Supervisor'], true)): ?>
@@ -57,6 +69,18 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                     <a href="HomeTrabajador.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         <span>Registrar Entradas y Salidas</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="MisPlanillas.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                        <span>Mis Planillas</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="MisProyectos.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M3 12h18"></path><path d="M3 18h18"></path><path d="M6 6v12"></path></svg>
+                        <span>Mis Proyectos</span>
                     </a>
                 </li>
                 <?php endif; ?>

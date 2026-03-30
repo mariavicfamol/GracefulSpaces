@@ -64,3 +64,67 @@ CREATE TABLE IF NOT EXISTS `marcaciones` (
         FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ============================================================
+-- Tablas de Planillas Mensuales
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `planillas_mensuales` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `id_trabajador`         INT NOT NULL,
+    `anio`                  INT NOT NULL,
+    `mes`                   INT NOT NULL,
+    `tarifa_hora`           DECIMAL(10, 2) NOT NULL,
+    `horas_totales`         DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    `monto_total`           DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    `fecha_generacion`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `creado_por`            INT NULL,
+    UNIQUE KEY `uniq_planilla_mes` (`id_trabajador`, `anio`, `mes`),
+    INDEX `idx_periodo` (`anio`, `mes`),
+    CONSTRAINT `fk_planillas_trabajador`
+        FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `planilla_detalles` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `id_planilla`           INT NOT NULL,
+    `fecha_marcacion`       DATE NOT NULL,
+    `hora_entrada`          DATETIME NULL,
+    `hora_salida`           DATETIME NULL,
+    `horas_laboradas`       DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    INDEX `idx_planilla` (`id_planilla`),
+    INDEX `idx_fecha_detalle` (`fecha_marcacion`),
+    CONSTRAINT `fk_detalle_planilla`
+        FOREIGN KEY (`id_planilla`) REFERENCES `planillas_mensuales`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- Tablas de Proyectos
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `proyectos` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `nombre`                VARCHAR(180) NOT NULL,
+    `detalles`              TEXT,
+    `especificaciones`      TEXT,
+    `horarios`              TEXT,
+    `materiales`            TEXT,
+    `estado_general`        ENUM('En progreso','Finalizado') DEFAULT 'En progreso',
+    `creado_por`            INT NULL,
+    `creado_en`             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `actualizado_en`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_estado_general` (`estado_general`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `proyecto_colaboradores` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `id_proyecto`           INT NOT NULL,
+    `id_trabajador`         INT NOT NULL,
+    `terminado`             TINYINT(1) NOT NULL DEFAULT 0,
+    `fecha_asignacion`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `fecha_terminado`       DATETIME NULL,
+    UNIQUE KEY `uniq_proyecto_trabajador` (`id_proyecto`, `id_trabajador`),
+    INDEX `idx_trabajador` (`id_trabajador`),
+    CONSTRAINT `fk_pc_proyecto`
+        FOREIGN KEY (`id_proyecto`) REFERENCES `proyectos`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_pc_trabajador`
+        FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

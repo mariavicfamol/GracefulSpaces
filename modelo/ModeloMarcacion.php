@@ -8,7 +8,7 @@ class ModeloMarcacion {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
 
-        $hoy = date('Y-m-d');
+        $hoy = self::fechaHoyVancouver();
         $sql = "SELECT * FROM marcaciones WHERE id_trabajador = ? AND fecha_marcacion = ? LIMIT 1";
 
         $stmt = $conexion->prepare($sql);
@@ -122,8 +122,8 @@ class ModeloMarcacion {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
 
-        $hoy = date('Y-m-d');
-        $ahora = date('Y-m-d H:i:s');
+        $hoy = self::fechaHoyVancouver();
+        $ahora = self::fechaHoraActualVancouver();
 
         $marcacion = self::obtenerMarcacionInterna($conexion, $idTrabajador, $hoy);
 
@@ -161,8 +161,8 @@ class ModeloMarcacion {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
 
-        $hoy = date('Y-m-d');
-        $ahora = date('Y-m-d H:i:s');
+        $hoy = self::fechaHoyVancouver();
+        $ahora = self::fechaHoraActualVancouver();
 
         $marcacion = self::obtenerMarcacionInterna($conexion, $idTrabajador, $hoy);
 
@@ -233,5 +233,17 @@ class ModeloMarcacion {
 
         [$anio, $mes, $dia] = array_map('intval', explode('-', $fecha));
         return checkdate($mes, $dia, $anio);
+    }
+
+    private static function fechaHoyVancouver(): string {
+        return self::ahoraVancouver()->format('Y-m-d');
+    }
+
+    private static function fechaHoraActualVancouver(): string {
+        return self::ahoraVancouver()->format('Y-m-d H:i:s');
+    }
+
+    private static function ahoraVancouver(): DateTimeImmutable {
+        return new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE));
     }
 }

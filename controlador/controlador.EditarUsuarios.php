@@ -3,25 +3,46 @@
 session_start();
 require_once __DIR__ . '/../modelo/ModeloUsuario.php';
 
+function responderJson(int $statusCode, array $payload): void {
+    http_response_code($statusCode);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload);
+    exit;
+}
+
+function esAccionAjaxUsuarios(string $accion): bool {
+    return in_array($accion, ['buscar', 'actualizar', 'darDeBaja'], true);
+}
+
+$accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
+$accionAjax = esAccionAjaxUsuarios($accion);
+
 // Proteger ruta
 if (empty($_SESSION['usuario'])) {
+    if ($accionAjax) {
+        responderJson(401, ['error' => true, 'mensaje' => 'Sesión expirada. Vuelve a iniciar sesión.']);
+    }
     header('Location: ../vista/vistas/Login.php');
     exit;
 }
 
 $rol = $_SESSION['usuario']['rol'] ?? '';
-$accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 
 if ($rol === 'Trabajador') {
-    if (in_array($accion, ['buscar', 'actualizar', 'darDeBaja'], true)) {
-        http_response_code(403);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['error' => true, 'mensaje' => 'No tienes permisos para gestionar usuarios.']);
+    if ($accionAjax) {
+        responderJson(403, ['error' => true, 'mensaje' => 'No tienes permisos para gestionar usuarios.']);
     } else {
         http_response_code(403);
         header('Location: ../vista/vistas/HomeAdminTotal.php');
     }
     exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $accion === '') {
+    responderJson(413, [
+        'error' => true,
+        'mensaje' => 'La solicitud no pudo procesarse. Verifique el tamaño del archivo de imagen e intente nuevamente.'
+    ]);
 }
 
 // -------------------------------------------------------
@@ -48,11 +69,9 @@ if ($accion === 'buscar') {
 // ACTUALIZAR usuario (POST con accion=actualizar)
 // -------------------------------------------------------
 if ($accion === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json; charset=utf-8');
     $id = (int)($_POST['id'] ?? 0);
     if (!$id) {
-        echo json_encode(['error' => true, 'mensaje' => 'ID de usuario no válido.']);
-        exit;
+        responderJson(400, ['error' => true, 'mensaje' => 'ID de usuario no válido.']);
     }
 
     $datos = [
@@ -82,34 +101,42 @@ if ($accion === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     // Foto actualizada
-    if (!empty($_FILES['fotoPerfil']['tmp_name'])) {
+    if (isset($_FILES['fotoPerfil']) && ($_FILES['fotoPerfil']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+        $errorSubida = (int)($_FILES['fotoPerfil']['error'] ?? UPLOAD_ERR_OK);
+
+        if ($errorSubida !== UPLOAD_ERR_OK) {
+            $mensaje = 'No se pudo subir la imagen seleccionada.';
+            if ($errorSubida === UPLOAD_ERR_INI_SIZE || $errorSubida === UPLOAD_ERR_FORM_SIZE) {
+                $mensaje = 'La imagen supera el tamaño máximo permitido por el servidor.';
+            }
+            responderJson(413, ['error' => true, 'mensaje' => $mensaje]);
+        }
+
         $datos['foto_tmp']    = $_FILES['fotoPerfil']['tmp_name'];
         $datos['foto_nombre'] = $_FILES['fotoPerfil']['name'];
     }
 
     if (empty($datos['nombre']) || empty($datos['apellido1'])) {
-        echo json_encode(['error' => true, 'mensaje' => 'Nombre y primer apellido son obligatorios.']);
-        exit;
+        responderJson(400, ['error' => true, 'mensaje' => 'Nombre y primer apellido son obligatorios.']);
     }
 
-    echo json_encode(ModeloUsuario::actualizarUsuario($id, $datos));
-    exit;
+    responderJson(200, ModeloUsuario::actualizarUsuario($id, $datos));
 }
 
 // -------------------------------------------------------
 // DAR DE BAJA (POST con accion=darDeBaja)
 // -------------------------------------------------------
 if ($accion === 'darDeBaja' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json; charset=utf-8');
     $id = (int)($_POST['id'] ?? 0);
     if (!$id) {
-        echo json_encode(['error' => true, 'mensaje' => 'ID no válido.']);
-        exit;
+        responderJson(400, ['error' => true, 'mensaje' => 'ID no válido.']);
     }
-    echo json_encode(ModeloUsuario::darDeBaja($id));
-    exit;
+    responderJson(200, ModeloUsuario::darDeBaja($id));
 }
 
 // Redirigir si llegan sin acción válida
+if ($accionAjax) {
+    responderJson(400, ['error' => true, 'mensaje' => 'Acción no válida para gestión de usuarios.']);
+}
 header('Location: ../vista/vistas/EditarUsuarios.php');
 exit;

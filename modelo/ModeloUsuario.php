@@ -128,7 +128,14 @@ class ModeloUsuario {
         // Si viene nueva foto
         $rutaFoto = $datos['foto_actual'] ?? null;
         if (!empty($datos['foto_tmp']) && !empty($datos['foto_nombre'])) {
-            $rutaFoto = self::guardarFoto($datos['foto_tmp'], $datos['foto_nombre']);
+            $rutaNuevaFoto = self::guardarFoto($datos['foto_tmp'], $datos['foto_nombre']);
+
+            if ($rutaNuevaFoto === null) {
+                $conexion->close();
+                return ['error' => true, 'mensaje' => 'No se pudo guardar la imagen. Verifique formato, tamaño y permisos de la carpeta de subidas.'];
+            }
+
+            $rutaFoto = $rutaNuevaFoto;
         }
 
         // Si viene nueva contraseña
@@ -246,9 +253,21 @@ class ModeloUsuario {
         if (!in_array($ext, $permitidos)) return null;
 
         $nombreNuevo = uniqid('foto_', true) . '.' . $ext;
-        $destino = __DIR__ . '/../publico/subidas/' . $nombreNuevo;
+        $carpetaSubidas = __DIR__ . '/../publico/subidas/';
 
-        if (move_uploaded_file($tmpPath, $destino)) {
+        if (!is_dir($carpetaSubidas)) {
+            if (!mkdir($carpetaSubidas, 0755, true) && !is_dir($carpetaSubidas)) {
+                return null;
+            }
+        }
+
+        if (!is_uploaded_file($tmpPath)) {
+            return null;
+        }
+
+        $destino = $carpetaSubidas . $nombreNuevo;
+
+        if (@move_uploaded_file($tmpPath, $destino)) {
             return 'publico/subidas/' . $nombreNuevo;
         }
         return null;

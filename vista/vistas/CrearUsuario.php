@@ -193,7 +193,7 @@ unset($_SESSION['error_crear'], $_SESSION['exito_crear']);
                     <option>Administrador Total</option>
                     <option>Administrador</option>
                     <option>Supervisor</option>
-                    <option>Trabajador</option>
+                    <option selected>Trabajador</option>
                 </select>
             </div>
             <div class="grupo-campo">

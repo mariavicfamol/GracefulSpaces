@@ -5,6 +5,9 @@ define('DB_NOMBRE',    'bxqtzm3rnnsr7lwf9akd');
 define('DB_USUARIO',   'udgygsl4vnqzvmgp');
 define('DB_PASSWORD',  'e1vbFaaz1kHfFlZYbqII');
 define('DB_PUERTO',    3306);
+define('APP_TIMEZONE', 'America/Vancouver');
+
+date_default_timezone_set(APP_TIMEZONE);
 
 /**
  * Crea y retorna una conexion activa a la base de datos
@@ -28,5 +31,10 @@ function obtenerConexion(): mysqli {
     }
 
     $conexion->set_charset('utf8');
+
+    // Alinea la sesion SQL al desfase horario actual de Vancouver.
+    $offsetVancouver = (new DateTime('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
+    $conexion->query("SET time_zone = '$offsetVancouver'");
+
     return $conexion;
 }

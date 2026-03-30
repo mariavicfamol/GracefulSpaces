@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const botonBajar      = document.getElementById('botonDarDeBaja');
     const mensajeAccion   = document.getElementById('mensajeAccion');
     const mensajeBusqueda = document.getElementById('mensajeBusqueda');
+    const TAMANO_MAX_FOTO = 5 * 1024 * 1024; // 5 MB
 
     // URL del controlador PHP (relativa desde la vista)
     const URL_CONTROLADOR = '../../controlador/controlador.EditarUsuarios.php';
@@ -25,6 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
         elem.style.color = esError ? '#c0392b' : '#27ae60';
         elem.style.fontWeight = '600';
         setTimeout(() => { elem.style.display = 'none'; }, 5000);
+    }
+
+    async function parsearRespuestaServidor(resp) {
+        const contenido = await resp.text();
+
+        try {
+            return JSON.parse(contenido);
+        } catch {
+            const resumen = (contenido || '').trim().slice(0, 140);
+            throw new Error(`Respuesta inesperada del servidor (${resp.status}). ${resumen}`);
+        }
     }
 
     function setSelect(id, valor) {
@@ -44,6 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
     selectorFoto.addEventListener('change', function () {
         const archivo = this.files[0];
         if (archivo) {
+            if (archivo.size > TAMANO_MAX_FOTO) {
+                this.value = '';
+                mostrarMensaje(mensajeAccion, 'La imagen supera el máximo permitido de 5 MB.', true);
+                return;
+            }
+
             const lector = new FileReader();
             lector.onload = e => { vistaPrevia.src = e.target.result; };
             lector.readAsDataURL(archivo);
@@ -85,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const resp = await fetch(`${URL_CONTROLADOR}?accion=buscar&termino=${encodeURIComponent(termino)}`);
-            const data = await resp.json();
+            const data = await parsearRespuestaServidor(resp);
 
             if (data.error) {
                 mostrarMensaje(mensajeBusqueda, data.mensaje, true);
@@ -130,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarMensaje(mensajeBusqueda, `Colaborador "${u.nombre} ${u.apellido1}" cargado correctamente.`);
 
         } catch (err) {
-            mostrarMensaje(mensajeBusqueda, 'Error de comunicación con el servidor.', true);
+            mostrarMensaje(mensajeBusqueda, err.message || 'Error de comunicación con el servidor.', true);
             console.error(err);
         }
     });
@@ -157,10 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const resp = await fetch(URL_CONTROLADOR, { method: 'POST', body: formData });
-            const data = await resp.json();
+            const data = await parsearRespuestaServidor(resp);
+
             mostrarMensaje(mensajeAccion, data.mensaje, data.error);
         } catch (err) {
-            mostrarMensaje(mensajeAccion, 'Error de comunicación con el servidor.', true);
+            mostrarMensaje(mensajeAccion, err.message || 'Error de comunicación con el servidor.', true);
             console.error(err);
         }
     });
@@ -184,13 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const resp = await fetch(URL_CONTROLADOR, { method: 'POST', body: formData });
-            const data = await resp.json();
+            const data = await parsearRespuestaServidor(resp);
             mostrarMensaje(mensajeAccion, data.mensaje, data.error);
             if (!data.error) {
                 setSelect('estadoCuenta', 'Inactivo');
             }
         } catch (err) {
-            mostrarMensaje(mensajeAccion, 'Error de comunicación con el servidor.', true);
+            mostrarMensaje(mensajeAccion, err.message || 'Error de comunicación con el servidor.', true);
         }
     });
 
