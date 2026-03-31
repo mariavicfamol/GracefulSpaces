@@ -9,6 +9,18 @@ class ModeloProyecto {
             return ['error' => true, 'mensaje' => 'El nombre del proyecto es obligatorio.'];
         }
 
+        if (empty($datos['detalles'])) {
+            return ['error' => true, 'mensaje' => 'La descripcion del proyecto es obligatoria.'];
+        }
+
+        if (empty($datos['fecha_proyecto']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$datos['fecha_proyecto'])) {
+            return ['error' => true, 'mensaje' => 'Debes seleccionar una fecha valida para el proyecto.'];
+        }
+
+        if (empty($datos['hora_proyecto']) || !preg_match('/^\d{2}:\d{2}$/', (string)$datos['hora_proyecto'])) {
+            return ['error' => true, 'mensaje' => 'Debes seleccionar una hora valida para el proyecto.'];
+        }
+
         if (empty($idsColaboradores)) {
             return ['error' => true, 'mensaje' => 'Debes asignar al menos un colaborador.'];
         }
@@ -16,14 +28,34 @@ class ModeloProyecto {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
 
+        $disponibles = self::obtenerColaboradoresDisponiblesInterno($conexion, $datos['fecha_proyecto'], $datos['hora_proyecto']);
+        $mapaDisponibles = [];
+        foreach ($disponibles as $disponible) {
+            $mapaDisponibles[(int)$disponible['id']] = true;
+        }
+
+        foreach ($idsColaboradores as $idColaborador) {
+            if (!isset($mapaDisponibles[(int)$idColaborador])) {
+                $conexion->close();
+                return [
+                    'error' => true,
+                    'mensaje' => 'Uno o mas colaboradores ya tienen un proyecto asignado en ese dia y horario.',
+                ];
+            }
+        }
+
+        $horarioTexto = $datos['fecha_proyecto'] . ' ' . $datos['hora_proyecto'];
+
         $sqlProyecto = "INSERT INTO proyectos (
                             nombre,
                             detalles,
                             especificaciones,
                             horarios,
+                            fecha_proyecto,
+                            hora_proyecto,
                             materiales,
                             creado_por
-                        ) VALUES (?, ?, ?, ?, ?, ?)";
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmtProyecto = $conexion->prepare($sqlProyecto);
         if (!$stmtProyecto) {
@@ -32,11 +64,13 @@ class ModeloProyecto {
         }
 
         $stmtProyecto->bind_param(
-            'sssssi',
+            'sssssssi',
             $datos['nombre'],
             $datos['detalles'],
             $datos['especificaciones'],
-            $datos['horarios'],
+            $horarioTexto,
+            $datos['fecha_proyecto'],
+            $datos['hora_proyecto'],
             $datos['materiales'],
             $idAdmin
         );
@@ -84,13 +118,57 @@ class ModeloProyecto {
         ];
     }
 
-    public static function obtenerColaboradoresDisponibles(): array {
+    public static function obtenerColaboradoresDisponibles(string $fechaProyecto = '', string $horaProyecto = ''): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
 
+        $filas = self::obtenerColaboradoresDisponiblesInterno($conexion, $fechaProyecto, $horaProyecto);
+
+        $conexion->close();
+        return $filas;
+    }
+
+    private static function obtenerColaboradoresDisponiblesInterno(mysqli $conexion, string $fechaProyecto = '', string $horaProyecto = ''): array {
+        $fechaProyecto = trim($fechaProyecto);
+        $horaProyecto = self::normalizarHora($horaProyecto);
+
+        if ($fechaProyecto !== '' && $horaProyecto !== '') {
+            $sql = "SELECT t.id, t.id_empresa, t.nombre, t.apellido1, COALESCE(t.apellido2, '') AS apellido2, t.rol, t.estado
+                    FROM trabajadores t
+                    WHERE t.rol IN ('Trabajador', 'Supervisor')
+                      AND t.estado = 'Activo'
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM proyecto_colaboradores pc2
+                          INNER JOIN proyectos p2 ON p2.id = pc2.id_proyecto
+                          WHERE pc2.id_trabajador = t.id
+                            AND pc2.terminado = 0
+                            AND p2.fecha_proyecto = ?
+                            AND p2.hora_proyecto = ?
+                      )
+                    ORDER BY t.nombre ASC, t.apellido1 ASC";
+
+            $stmt = $conexion->prepare($sql);
+            if (!$stmt) {
+                return [];
+            }
+
+            $stmt->bind_param('ss', $fechaProyecto, $horaProyecto);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+
+            $filas = [];
+            while ($fila = $resultado->fetch_assoc()) {
+                $filas[] = $fila;
+            }
+
+            $stmt->close();
+            return $filas;
+        }
+
         $sql = "SELECT id, id_empresa, nombre, apellido1, COALESCE(apellido2, '') AS apellido2, rol, estado
                 FROM trabajadores
-            WHERE rol IN ('Trabajador', 'Supervisor')
+            WHERE rol IN ('Trabajador', 'Supervisor') AND estado = 'Activo'
             ORDER BY (estado = 'Activo') DESC, nombre ASC, apellido1 ASC";
 
         $resultado = $conexion->query($sql);
@@ -100,7 +178,6 @@ class ModeloProyecto {
             $filas[] = $fila;
         }
 
-        $conexion->close();
         return $filas;
     }
 
@@ -113,6 +190,8 @@ class ModeloProyecto {
                        p.detalles,
                        p.especificaciones,
                        p.horarios,
+                       p.fecha_proyecto,
+                       p.hora_proyecto,
                        p.materiales,
                        p.creado_en,
                        p.estado_general,
@@ -144,6 +223,8 @@ class ModeloProyecto {
                        p.detalles,
                        p.especificaciones,
                        p.horarios,
+                       p.fecha_proyecto,
+                       p.hora_proyecto,
                        p.materiales,
                        p.estado_general,
                        p.creado_en,
@@ -270,6 +351,8 @@ class ModeloProyecto {
                             detalles TEXT,
                             especificaciones TEXT,
                             horarios TEXT,
+                            fecha_proyecto DATE NULL,
+                            hora_proyecto TIME NULL,
                             materiales TEXT,
                             estado_general ENUM('En progreso','Finalizado') DEFAULT 'En progreso',
                             creado_por INT NULL,
@@ -295,5 +378,47 @@ class ModeloProyecto {
 
         $conexion->query($sqlProyectos);
         $conexion->query($sqlAsignaciones);
+
+        if (!self::columnaExiste($conexion, 'proyectos', 'fecha_proyecto')) {
+            $conexion->query('ALTER TABLE proyectos ADD COLUMN fecha_proyecto DATE NULL AFTER horarios');
+        }
+
+        if (!self::columnaExiste($conexion, 'proyectos', 'hora_proyecto')) {
+            $conexion->query('ALTER TABLE proyectos ADD COLUMN hora_proyecto TIME NULL AFTER fecha_proyecto');
+        }
+    }
+
+    private static function columnaExiste(mysqli $conexion, string $tabla, string $columna): bool {
+                $sql = "SELECT 1
+                                FROM INFORMATION_SCHEMA.COLUMNS
+                                WHERE TABLE_SCHEMA = DATABASE()
+                                    AND TABLE_NAME = ?
+                                    AND COLUMN_NAME = ?
+                                LIMIT 1";
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+                $stmt->bind_param('ss', $tabla, $columna);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $existe = $res !== false && $res->num_rows > 0;
+        $stmt->close();
+
+        return $existe;
+    }
+
+    private static function normalizarHora(string $hora): string {
+        $hora = trim($hora);
+        if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $hora)) {
+            return substr($hora, 0, 5);
+        }
+
+        if (preg_match('/^\d{2}:\d{2}$/', $hora)) {
+            return $hora;
+        }
+
+        return '';
     }
 }

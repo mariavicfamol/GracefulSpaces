@@ -17,6 +17,29 @@ $esColaborador = in_array($rol, ['Trabajador', 'Supervisor'], true);
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 
+if ($accion === 'colaboradoresDisponibles') {
+    if (!$esAdmin) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([]);
+        exit;
+    }
+
+    $fechaProyecto = trim($_GET['fecha'] ?? '');
+    $horaProyecto = trim($_GET['hora'] ?? '');
+
+    header('Content-Type: application/json; charset=utf-8');
+
+    if ($fechaProyecto === '' || $horaProyecto === '') {
+        echo json_encode([]);
+        exit;
+    }
+
+    $colaboradores = ModeloProyecto::obtenerColaboradoresDisponibles($fechaProyecto, $horaProyecto);
+    echo json_encode($colaboradores);
+    exit;
+}
+
 if ($accion === 'crear') {
     if (!$esAdmin) {
         $_SESSION['error_proyecto_admin'] = 'No tienes permisos para crear proyectos.';
@@ -39,9 +62,10 @@ if ($accion === 'crear') {
 
     $datos = [
         'nombre' => trim($_POST['nombre'] ?? ''),
-        'detalles' => trim($_POST['detalles'] ?? ''),
+        'detalles' => trim($_POST['descripcion'] ?? ($_POST['detalles'] ?? '')),
         'especificaciones' => trim($_POST['especificaciones'] ?? ''),
-        'horarios' => trim($_POST['horarios'] ?? ''),
+        'fecha_proyecto' => trim($_POST['fecha_proyecto'] ?? ''),
+        'hora_proyecto' => trim($_POST['hora_proyecto'] ?? ''),
         'materiales' => trim($_POST['materiales'] ?? ''),
     ];
 

@@ -19,7 +19,7 @@ $error = $_SESSION['error_proyecto_admin'] ?? '';
 $exito = $_SESSION['exito_proyecto_admin'] ?? '';
 unset($_SESSION['error_proyecto_admin'], $_SESSION['exito_proyecto_admin']);
 
-$colaboradores = ModeloProyecto::obtenerColaboradoresDisponibles();
+$colaboradores = [];
 $proyectos = ModeloProyecto::obtenerProyectosAdmin();
 $hayColaboradores = !empty($colaboradores);
 ?>
@@ -56,7 +56,7 @@ $hayColaboradores = !empty($colaboradores);
 
     <section class="tarjeta-formulario">
         <h2>Crear Nuevo Proyecto</h2>
-        <form method="POST" action="../../controlador/controlador.Proyectos.php" class="grid-formulario">
+        <form method="POST" action="../../controlador/controlador.Proyectos.php" class="grid-formulario" id="formCrearProyecto">
             <input type="hidden" name="accion" value="crear">
 
             <div class="grupo-campo ancho-completo">
@@ -65,8 +65,8 @@ $hayColaboradores = !empty($colaboradores);
             </div>
 
             <div class="grupo-campo">
-                <label for="detalles">Detalles del Proyecto</label>
-                <textarea id="detalles" name="detalles" rows="4"></textarea>
+                <label for="descripcion">Descripcion del Proyecto</label>
+                <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
             </div>
 
             <div class="grupo-campo">
@@ -75,8 +75,13 @@ $hayColaboradores = !empty($colaboradores);
             </div>
 
             <div class="grupo-campo">
-                <label for="horarios">Horarios</label>
-                <textarea id="horarios" name="horarios" rows="4" placeholder="Ejemplo: L-V 8:00 a 17:00"></textarea>
+                <label for="fecha_proyecto">Fecha del Proyecto</label>
+                <input type="date" id="fecha_proyecto" name="fecha_proyecto" required>
+            </div>
+
+            <div class="grupo-campo">
+                <label for="hora_proyecto">Hora del Proyecto</label>
+                <input type="time" id="hora_proyecto" name="hora_proyecto" step="900" required>
             </div>
 
             <div class="grupo-campo">
@@ -85,28 +90,15 @@ $hayColaboradores = !empty($colaboradores);
             </div>
 
             <div class="grupo-campo ancho-completo">
-                <label for="colaboradores">Colaboradores Asignados (puedes seleccionar varios)</label>
-                <select id="colaboradores" name="colaboradores[]" multiple <?= $hayColaboradores ? 'required' : 'disabled' ?>>
-                    <?php if ($hayColaboradores): ?>
-                        <?php foreach ($colaboradores as $colaborador): ?>
-                            <option value="<?= (int)$colaborador['id'] ?>">
-                                <?= htmlspecialchars($colaborador['nombre'] . ' ' . $colaborador['apellido1'] . ' ' . $colaborador['apellido2']) ?>
-                                (<?= htmlspecialchars($colaborador['id_empresa']) ?> - <?= htmlspecialchars($colaborador['rol']) ?> - <?= htmlspecialchars($colaborador['estado']) ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <option>No hay colaboradores (Trabajador/Supervisor) en la base de datos</option>
-                    <?php endif; ?>
+                <label for="colaboradores">Colaboradores Disponibles (puedes seleccionar varios)</label>
+                <select id="colaboradores" name="colaboradores[]" multiple required disabled>
+                    <option>Selecciona primero fecha y hora</option>
                 </select>
-                <?php if ($hayColaboradores): ?>
-                    <small>Usa Ctrl + clic para seleccionar múltiples colaboradores.</small>
-                <?php else: ?>
-                    <small>Crea usuarios con rol Trabajador o Supervisor para poder asignarlos.</small>
-                <?php endif; ?>
+                <small id="ayudaColaboradores">Usa Ctrl + clic para seleccionar multiples colaboradores.</small>
             </div>
 
             <div class="acciones">
-                <button type="submit" class="btn-principal" <?= $hayColaboradores ? '' : 'disabled' ?>>Crear Proyecto</button>
+                <button type="submit" class="btn-principal">Crear Proyecto</button>
             </div>
         </form>
     </section>
@@ -139,7 +131,13 @@ $hayColaboradores = !empty($colaboradores);
                                     <div class="subtexto"><?= nl2br(htmlspecialchars($proyecto['especificaciones'] ?: 'Sin especificaciones')) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($proyecto['estado_general']) ?></td>
-                                <td><?= nl2br(htmlspecialchars($proyecto['horarios'] ?: 'No definido')) ?></td>
+                                <td>
+                                    <?php if (!empty($proyecto['fecha_proyecto']) && !empty($proyecto['hora_proyecto'])): ?>
+                                        <?= htmlspecialchars($proyecto['fecha_proyecto']) ?> <?= htmlspecialchars(substr((string)$proyecto['hora_proyecto'], 0, 5)) ?>
+                                    <?php else: ?>
+                                        <?= nl2br(htmlspecialchars($proyecto['horarios'] ?: 'No definido')) ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= nl2br(htmlspecialchars($proyecto['materiales'] ?: 'No definido')) ?></td>
                                 <td>
                                     <?php if (empty($proyecto['colaboradores'])): ?>
@@ -163,6 +161,74 @@ $hayColaboradores = !empty($colaboradores);
         </div>
     </section>
 </main>
+
+<script>
+const campoFecha = document.getElementById('fecha_proyecto');
+const campoHora = document.getElementById('hora_proyecto');
+const selectColaboradores = document.getElementById('colaboradores');
+const ayudaColaboradores = document.getElementById('ayudaColaboradores');
+const formCrearProyecto = document.getElementById('formCrearProyecto');
+
+function resetearColaboradores(mensaje) {
+    selectColaboradores.innerHTML = '';
+    const opcion = document.createElement('option');
+    opcion.textContent = mensaje;
+    selectColaboradores.appendChild(opcion);
+    selectColaboradores.disabled = true;
+}
+
+function cargarColaboradoresDisponibles() {
+    const fecha = campoFecha.value;
+    const hora = campoHora.value;
+
+    if (!fecha || !hora) {
+        resetearColaboradores('Selecciona primero fecha y hora');
+        ayudaColaboradores.textContent = 'Selecciona fecha y hora para ver disponibilidad.';
+        return;
+    }
+
+    resetearColaboradores('Cargando colaboradores disponibles...');
+    ayudaColaboradores.textContent = 'Consultando disponibilidad...';
+
+    const url = `../../controlador/controlador.Proyectos.php?accion=colaboradoresDisponibles&fecha=${encodeURIComponent(fecha)}&hora=${encodeURIComponent(hora)}`;
+
+    fetch(url)
+        .then((resp) => resp.json())
+        .then((data) => {
+            selectColaboradores.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                resetearColaboradores('No hay colaboradores disponibles para esa fecha y hora');
+                ayudaColaboradores.textContent = 'Intenta con otra fecha u horario.';
+                return;
+            }
+
+            data.forEach((colaborador) => {
+                const opcion = document.createElement('option');
+                opcion.value = colaborador.id;
+                opcion.textContent = `${colaborador.nombre} ${colaborador.apellido1} ${colaborador.apellido2} (${colaborador.id_empresa} - ${colaborador.rol} - ${colaborador.estado})`;
+                selectColaboradores.appendChild(opcion);
+            });
+
+            selectColaboradores.disabled = false;
+            ayudaColaboradores.textContent = 'Usa Ctrl + clic para seleccionar multiples colaboradores.';
+        })
+        .catch(() => {
+            resetearColaboradores('No se pudo cargar la disponibilidad');
+            ayudaColaboradores.textContent = 'Error al consultar disponibilidad.';
+        });
+}
+
+campoFecha.addEventListener('change', cargarColaboradoresDisponibles);
+campoHora.addEventListener('change', cargarColaboradoresDisponibles);
+
+formCrearProyecto.addEventListener('submit', (evento) => {
+    if (selectColaboradores.disabled || selectColaboradores.selectedOptions.length === 0) {
+        evento.preventDefault();
+        ayudaColaboradores.textContent = 'Debes seleccionar fecha/hora y al menos un colaborador disponible.';
+    }
+});
+</script>
 
 </body>
 </html>
