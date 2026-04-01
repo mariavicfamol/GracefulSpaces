@@ -57,6 +57,12 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                     </a>
                 </li>
                 <li class="item-menu">
+                    <a href="HistorialPagosAdmin.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 10h20"></path><path d="M7 14h3"></path><path d="M14 14h3"></path></svg>
+                        <span>Historial de Pagos</span>
+                    </a>
+                </li>
+                <li class="item-menu">
                     <a href="ProyectosAdmin.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18"></path><path d="M3 12h18"></path><path d="M3 17h18"></path><circle cx="7" cy="7" r="1"></circle><circle cx="7" cy="12" r="1"></circle><circle cx="7" cy="17" r="1"></circle></svg>
                         <span>Gestión de Proyectos</span>
@@ -75,6 +81,12 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                     <a href="MisPlanillas.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
                         <span>Mis Planillas</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="MisHistorialPagos.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                        <span>Mi Historial de Pagos</span>
                     </a>
                 </li>
                 <li class="item-menu">
