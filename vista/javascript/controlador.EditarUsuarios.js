@@ -120,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('apellido2').value        = u.apellido2 || '';
             document.getElementById('numeroIdentificacion').value = u.numero_identificacion || '';
             document.getElementById('fechaNacimiento').value  = u.fecha_nacimiento || '';
-            document.getElementById('generoUsuario').value    = u.genero || '';
             document.getElementById('fechaIngreso').value     = u.fecha_ingreso || '';
             document.getElementById('correoPersonal').value   = u.correo_personal || '';
             document.getElementById('correoCorporativo').value = u.correo_corporativo || '';
@@ -131,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('nombreAcceso').value     = u.login_usuario || '';
 
             setSelect('tipoDocumento',    u.tipo_documento);
-            setSelect('sexoUsuario',      u.sexo);
+            setSelect('generoUsuario',    u.genero || 'Prefiero no decir');
             setSelect('nacionalidadUsuario', u.nacionalidad);
             setSelect('cargoPuesto',      u.cargo);
             setSelect('tipoContrato',     u.tipo_contrato);

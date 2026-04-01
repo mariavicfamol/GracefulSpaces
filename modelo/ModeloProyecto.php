@@ -386,6 +386,43 @@ class ModeloProyecto {
         if (!self::columnaExiste($conexion, 'proyectos', 'hora_proyecto')) {
             $conexion->query('ALTER TABLE proyectos ADD COLUMN hora_proyecto TIME NULL AFTER fecha_proyecto');
         }
+
+        self::crearIndicesOptimizacion($conexion);
+    }
+
+    private static function crearIndicesOptimizacion(mysqli $conexion): void {
+        if (!self::indiceExiste($conexion, 'trabajadores', 'idx_rol_estado')) {
+            $conexion->query('ALTER TABLE trabajadores ADD INDEX idx_rol_estado (rol, estado)');
+        }
+
+        if (!self::indiceExiste($conexion, 'proyectos', 'idx_fecha_hora')) {
+            $conexion->query('ALTER TABLE proyectos ADD INDEX idx_fecha_hora (fecha_proyecto, hora_proyecto)');
+        }
+
+        if (!self::indiceExiste($conexion, 'proyecto_colaboradores', 'idx_trabajador_terminado')) {
+            $conexion->query('ALTER TABLE proyecto_colaboradores ADD INDEX idx_trabajador_terminado (id_trabajador, terminado)');
+        }
+    }
+
+    private static function indiceExiste(mysqli $conexion, string $tabla, string $indice): bool {
+        $sql = "SELECT 1
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = ?
+                  AND INDEX_NAME = ?
+                LIMIT 1";
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('ss', $tabla, $indice);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $existe = $res !== false && $res->num_rows > 0;
+        $stmt->close();
+
+        return $existe;
     }
 
     private static function columnaExiste(mysqli $conexion, string $tabla, string $columna): bool {

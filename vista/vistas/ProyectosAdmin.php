@@ -168,6 +168,7 @@ const campoHora = document.getElementById('hora_proyecto');
 const selectColaboradores = document.getElementById('colaboradores');
 const ayudaColaboradores = document.getElementById('ayudaColaboradores');
 const formCrearProyecto = document.getElementById('formCrearProyecto');
+const cacheColaboradores = {};
 
 function resetearColaboradores(mensaje) {
     selectColaboradores.innerHTML = '';
@@ -187,6 +188,14 @@ function cargarColaboradoresDisponibles() {
         return;
     }
 
+    const cacheKey = `${fecha}|${hora}`;
+    
+    // Si ya está en caché, no hace request
+    if (cacheColaboradores[cacheKey] !== undefined) {
+        mostrarColaboradores(cacheColaboradores[cacheKey]);
+        return;
+    }
+
     resetearColaboradores('Cargando colaboradores disponibles...');
     ayudaColaboradores.textContent = 'Consultando disponibilidad...';
 
@@ -195,28 +204,33 @@ function cargarColaboradoresDisponibles() {
     fetch(url)
         .then((resp) => resp.json())
         .then((data) => {
-            selectColaboradores.innerHTML = '';
-
-            if (!Array.isArray(data) || data.length === 0) {
-                resetearColaboradores('No hay colaboradores disponibles para esa fecha y hora');
-                ayudaColaboradores.textContent = 'Intenta con otra fecha u horario.';
-                return;
-            }
-
-            data.forEach((colaborador) => {
-                const opcion = document.createElement('option');
-                opcion.value = colaborador.id;
-                opcion.textContent = `${colaborador.nombre} ${colaborador.apellido1} ${colaborador.apellido2} (${colaborador.id_empresa} - ${colaborador.rol} - ${colaborador.estado})`;
-                selectColaboradores.appendChild(opcion);
-            });
-
-            selectColaboradores.disabled = false;
-            ayudaColaboradores.textContent = 'Usa Ctrl + clic para seleccionar multiples colaboradores.';
+            cacheColaboradores[cacheKey] = data;
+            mostrarColaboradores(data);
         })
         .catch(() => {
             resetearColaboradores('No se pudo cargar la disponibilidad');
             ayudaColaboradores.textContent = 'Error al consultar disponibilidad.';
         });
+}
+
+function mostrarColaboradores(data) {
+    selectColaboradores.innerHTML = '';
+
+    if (!Array.isArray(data) || data.length === 0) {
+        resetearColaboradores('No hay colaboradores disponibles para esa fecha y hora');
+        ayudaColaboradores.textContent = 'Intenta con otra fecha u horario.';
+        return;
+    }
+
+    data.forEach((colaborador) => {
+        const opcion = document.createElement('option');
+        opcion.value = colaborador.id;
+        opcion.textContent = `${colaborador.nombre} ${colaborador.apellido1} ${colaborador.apellido2} (${colaborador.id_empresa} - ${colaborador.rol} - ${colaborador.estado})`;
+        selectColaboradores.appendChild(opcion);
+    });
+
+    selectColaboradores.disabled = false;
+    ayudaColaboradores.textContent = 'Usa Ctrl + clic para seleccionar multiples colaboradores.';
 }
 
 campoFecha.addEventListener('change', cargarColaboradoresDisponibles);

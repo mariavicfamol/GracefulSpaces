@@ -31,6 +31,8 @@ function obtenerConexion(): mysqli {
     }
 
     $conexion->set_charset('utf8');
+    $conexion->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+    $conexion->options(MYSQLI_READ_DEFAULT_GROUP, 'max_allowed_packet=16M');
 
     // Alinea la sesion SQL al desfase horario actual de Vancouver.
     $offsetVancouver = (new DateTime('now', new DateTimeZone(APP_TIMEZONE)))->format('P');

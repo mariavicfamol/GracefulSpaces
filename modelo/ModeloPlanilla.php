@@ -33,7 +33,7 @@ class ModeloPlanilla {
             }
 
             $horasTotales = round($horasTotales, 2);
-            $montoTotal = round($horasTotales * $tarifaHora, 2);
+            $montoTotal = self::calcularMontoConExtras($horasTotales, $tarifaHora);
 
             $sqlPlanilla = "INSERT INTO planillas_mensuales
                             (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por)
@@ -301,6 +301,15 @@ class ModeloPlanilla {
         } catch (Throwable $e) {
             return 0.0;
         }
+    }
+
+    private static function calcularMontoConExtras(float $horasTotales, float $tarifaHora): float {
+        if ($horasTotales <= 9) {
+            return round($horasTotales * $tarifaHora, 2);
+        }
+        $horasBase = 9 * $tarifaHora;
+        $horasExtras = ($horasTotales - 9) * $tarifaHora * 1.5;
+        return round($horasBase + $horasExtras, 2);
     }
 
     private static function asegurarTablas(mysqli $conexion): void {

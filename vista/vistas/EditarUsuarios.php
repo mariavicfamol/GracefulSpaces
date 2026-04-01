@@ -93,16 +93,12 @@ if ($rol === 'Trabajador') {
                 <input type="date" name="fechaNacimiento" id="fechaNacimiento">
             </div>
             <div class="grupo-campo">
-                <label>Sexo</label>
-                <select name="sexoUsuario" id="sexoUsuario">
-                    <option>Hombre</option>
-                    <option>Mujer</option>
-                    <option>Prefiero no decir</option>
-                </select>
-            </div>
-            <div class="grupo-campo">
                 <label>Género</label>
-                <input type="text" name="generoUsuario" id="generoUsuario">
+                <select name="generoUsuario" id="generoUsuario">
+                    <option value="Hombre">Hombre</option>
+                    <option value="Mujer">Mujer</option>
+                    <option value="Prefiero no decir">Prefiero no decir</option>
+                </select>
             </div>
             <div class="grupo-campo">
                 <label>País de Origen</label>

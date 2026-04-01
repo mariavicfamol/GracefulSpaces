@@ -74,7 +74,7 @@ unset($_SESSION['error_planilla_admin'], $_SESSION['exito_planilla_admin']);
 
             <div class="grupo-campo">
                 <label for="tarifa_hora">Tarifa por Hora (USD)</label>
-                <input type="number" step="0.01" id="tarifa_hora" name="tarifa_hora" min="0.01" value="15.00" required>
+                <input type="number" step="0.01" id="tarifa_hora" name="tarifa_hora" min="0.01" value="20.00" required>
             </div>
 
             <div class="acciones-generacion">
