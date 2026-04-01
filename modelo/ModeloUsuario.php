@@ -9,76 +9,87 @@ class ModeloUsuario {
     // -------------------------------------------------------
     public static function crearUsuario(array $datos): array {
         $conexion = obtenerConexion();
+        $stmt = null;
 
-        // Generar ID empresa
-        $idEmpresa = self::generarIdEmpresa($conexion);
+        $fechaNacimiento = self::normalizarFecha($datos['fecha_nacimiento'] ?? null);
+        $fechaIngreso = self::normalizarFecha($datos['fecha_ingreso'] ?? null);
 
-        // Hash de contraseña
-        $passwordHash = password_hash($datos['password'], PASSWORD_BCRYPT, ['cost' => 12]);
-
-        // Guardar foto si viene
-        $rutaFoto = null;
-        if (!empty($datos['foto_tmp']) && !empty($datos['foto_nombre'])) {
-            $rutaFoto = self::guardarFoto($datos['foto_tmp'], $datos['foto_nombre']);
+        if (!self::esFechaValida($fechaNacimiento)) {
+            return ['error' => true, 'mensaje' => 'La fecha de nacimiento no es valida.'];
+        }
+        if (!self::esFechaValida($fechaIngreso)) {
+            return ['error' => true, 'mensaje' => 'La fecha de ingreso no es valida.'];
         }
 
-        $sql = "INSERT INTO trabajadores (
-                    id_empresa, nombre, apellido1, apellido2,
-                    tipo_documento, numero_identificacion, fecha_nacimiento,
-                    sexo, genero, nacionalidad,
-                    cargo, tipo_contrato, fecha_ingreso,
-                    correo_personal, correo_corporativo, telefono,
-                    contacto_emergencia, telefono_emergencia, direccion,
-                    login_usuario, password_hash, rol, estado, foto_perfil
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            // Generar ID empresa
+            $idEmpresa = self::generarIdEmpresa($conexion);
 
-        $stmt = $conexion->prepare($sql);
-        if (!$stmt) {
-            return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
-        }
+            // Hash de contraseña
+            $passwordHash = password_hash($datos['password'], PASSWORD_BCRYPT, ['cost' => 12]);
 
-        $stmt->bind_param(
-            'ssssssssssssssssssssssss',
-            $idEmpresa,
-            $datos['nombre'],
-            $datos['apellido1'],
-            $datos['apellido2'],
-            $datos['tipo_documento'],
-            $datos['numero_identificacion'],
-            $datos['fecha_nacimiento'],
-            $datos['sexo'],
-            $datos['genero'],
-            $datos['nacionalidad'],
-            $datos['cargo'],
-            $datos['tipo_contrato'],
-            $datos['fecha_ingreso'],
-            $datos['correo_personal'],
-            $datos['correo_corporativo'],
-            $datos['telefono'],
-            $datos['contacto_emergencia'],
-            $datos['telefono_emergencia'],
-            $datos['direccion'],
-            $datos['login_usuario'],
-            $passwordHash,
-            $datos['rol'],
-            $datos['estado'],
-            $rutaFoto
-        );
+            // Guardar foto si viene
+            $rutaFoto = null;
+            if (!empty($datos['foto_tmp']) && !empty($datos['foto_nombre'])) {
+                $rutaFoto = self::guardarFoto($datos['foto_tmp'], $datos['foto_nombre']);
+            }
 
-        if ($stmt->execute()) {
-            $stmt->close();
-            $conexion->close();
+            $sql = "INSERT INTO trabajadores (
+                        id_empresa, nombre, apellido1, apellido2,
+                        tipo_documento, numero_identificacion, fecha_nacimiento,
+                        sexo, genero, nacionalidad,
+                        cargo, tipo_contrato, fecha_ingreso,
+                        correo_personal, correo_corporativo, telefono,
+                        contacto_emergencia, telefono_emergencia, direccion,
+                        login_usuario, password_hash, rol, estado, foto_perfil
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $stmt = $conexion->prepare($sql);
+            if (!$stmt) {
+                return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
+            }
+
+            $stmt->bind_param(
+                'ssssssssssssssssssssssss',
+                $idEmpresa,
+                $datos['nombre'],
+                $datos['apellido1'],
+                $datos['apellido2'],
+                $datos['tipo_documento'],
+                $datos['numero_identificacion'],
+                $fechaNacimiento,
+                $datos['sexo'],
+                $datos['genero'],
+                $datos['nacionalidad'],
+                $datos['cargo'],
+                $datos['tipo_contrato'],
+                $fechaIngreso,
+                $datos['correo_personal'],
+                $datos['correo_corporativo'],
+                $datos['telefono'],
+                $datos['contacto_emergencia'],
+                $datos['telefono_emergencia'],
+                $datos['direccion'],
+                $datos['login_usuario'],
+                $passwordHash,
+                $datos['rol'],
+                $datos['estado'],
+                $rutaFoto
+            );
+
+            $stmt->execute();
             return ['error' => false, 'mensaje' => 'Usuario creado exitosamente.', 'id_empresa' => $idEmpresa];
+        } catch (mysqli_sql_exception $e) {
+            if ((int)$e->getCode() === 1062) {
+                return ['error' => true, 'mensaje' => 'El correo de usuario ya esta registrado.'];
+            }
+            return ['error' => true, 'mensaje' => 'Error al guardar: ' . $e->getMessage()];
+        } finally {
+            if ($stmt instanceof mysqli_stmt) {
+                $stmt->close();
+            }
+            $conexion->close();
         }
-
-        $error = $stmt->error;
-        $stmt->close();
-        $conexion->close();
-
-        if (str_contains($error, 'Duplicate')) {
-            return ['error' => true, 'mensaje' => 'El correo de usuario ya está registrado.'];
-        }
-        return ['error' => true, 'mensaje' => 'Error al guardar: ' . $error];
     }
 
     // -------------------------------------------------------
@@ -124,6 +135,17 @@ class ModeloUsuario {
     // -------------------------------------------------------
     public static function actualizarUsuario(int $id, array $datos): array {
         $conexion = obtenerConexion();
+        $stmt = null;
+
+        $fechaNacimiento = self::normalizarFecha($datos['fecha_nacimiento'] ?? null);
+        $fechaIngreso = self::normalizarFecha($datos['fecha_ingreso'] ?? null);
+
+        if (!self::esFechaValida($fechaNacimiento)) {
+            return ['error' => true, 'mensaje' => 'La fecha de nacimiento no es valida.'];
+        }
+        if (!self::esFechaValida($fechaIngreso)) {
+            return ['error' => true, 'mensaje' => 'La fecha de ingreso no es valida.'];
+        }
 
         // Si viene nueva foto
         $rutaFoto = $datos['foto_actual'] ?? null;
@@ -146,59 +168,63 @@ class ModeloUsuario {
             $sqlPassword = ', password_hash = ?';
         }
 
-        $sql = "UPDATE trabajadores SET
-                    nombre = ?, apellido1 = ?, apellido2 = ?,
-                    tipo_documento = ?, numero_identificacion = ?, fecha_nacimiento = ?,
-                    sexo = ?, genero = ?, nacionalidad = ?,
-                    cargo = ?, tipo_contrato = ?, fecha_ingreso = ?,
-                    correo_personal = ?, correo_corporativo = ?, telefono = ?,
-                    contacto_emergencia = ?, telefono_emergencia = ?, direccion = ?,
-                    login_usuario = ?, rol = ?, estado = ?, foto_perfil = ?
-                    $sqlPassword
-                WHERE id = ?";
+        try {
+            $sql = "UPDATE trabajadores SET
+                        nombre = ?, apellido1 = ?, apellido2 = ?,
+                        tipo_documento = ?, numero_identificacion = ?, fecha_nacimiento = ?,
+                        sexo = ?, genero = ?, nacionalidad = ?,
+                        cargo = ?, tipo_contrato = ?, fecha_ingreso = ?,
+                        correo_personal = ?, correo_corporativo = ?, telefono = ?,
+                        contacto_emergencia = ?, telefono_emergencia = ?, direccion = ?,
+                        login_usuario = ?, rol = ?, estado = ?, foto_perfil = ?
+                        $sqlPassword
+                    WHERE id = ?";
 
-        $stmt = $conexion->prepare($sql);
-        if (!$stmt) {
-            return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
-        }
+            $stmt = $conexion->prepare($sql);
+            if (!$stmt) {
+                return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
+            }
 
-        if (!empty($datos['password'])) {
-            $stmt->bind_param(
-                'sssssssssssssssssssssssi',
-                $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
-                $datos['tipo_documento'], $datos['numero_identificacion'], $datos['fecha_nacimiento'],
-                $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
-                $datos['cargo'], $datos['tipo_contrato'], $datos['fecha_ingreso'],
-                $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
-                $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
-                $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
-                $datos['password_hash'],
-                $id
-            );
-        } else {
-            $stmt->bind_param(
-                'ssssssssssssssssssssssi',
-                $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
-                $datos['tipo_documento'], $datos['numero_identificacion'], $datos['fecha_nacimiento'],
-                $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
-                $datos['cargo'], $datos['tipo_contrato'], $datos['fecha_ingreso'],
-                $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
-                $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
-                $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
-                $id
-            );
-        }
+            if (!empty($datos['password'])) {
+                $stmt->bind_param(
+                    'sssssssssssssssssssssssi',
+                    $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
+                    $datos['tipo_documento'], $datos['numero_identificacion'], $fechaNacimiento,
+                    $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
+                    $datos['cargo'], $datos['tipo_contrato'], $fechaIngreso,
+                    $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
+                    $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
+                    $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
+                    $datos['password_hash'],
+                    $id
+                );
+            } else {
+                $stmt->bind_param(
+                    'ssssssssssssssssssssssi',
+                    $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
+                    $datos['tipo_documento'], $datos['numero_identificacion'], $fechaNacimiento,
+                    $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
+                    $datos['cargo'], $datos['tipo_contrato'], $fechaIngreso,
+                    $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
+                    $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
+                    $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
+                    $id
+                );
+            }
 
-        if ($stmt->execute()) {
-            $stmt->close();
-            $conexion->close();
+            $stmt->execute();
             return ['error' => false, 'mensaje' => 'Usuario actualizado exitosamente.'];
+        } catch (mysqli_sql_exception $e) {
+            if ((int)$e->getCode() === 1062) {
+                return ['error' => true, 'mensaje' => 'El correo de usuario ya esta registrado.'];
+            }
+            return ['error' => true, 'mensaje' => 'Error al actualizar: ' . $e->getMessage()];
+        } finally {
+            if ($stmt instanceof mysqli_stmt) {
+                $stmt->close();
+            }
+            $conexion->close();
         }
-
-        $error = $stmt->error;
-        $stmt->close();
-        $conexion->close();
-        return ['error' => true, 'mensaje' => 'Error al actualizar: ' . $error];
     }
 
     // -------------------------------------------------------
@@ -271,5 +297,23 @@ class ModeloUsuario {
             return 'publico/subidas/' . $nombreNuevo;
         }
         return null;
+    }
+
+    private static function normalizarFecha(?string $fecha): ?string {
+        if ($fecha === null) {
+            return null;
+        }
+
+        $fecha = trim($fecha);
+        return $fecha === '' ? null : $fecha;
+    }
+
+    private static function esFechaValida(?string $fecha): bool {
+        if ($fecha === null) {
+            return true;
+        }
+
+        $dt = DateTime::createFromFormat('Y-m-d', $fecha);
+        return $dt instanceof DateTime && $dt->format('Y-m-d') === $fecha;
     }
 }

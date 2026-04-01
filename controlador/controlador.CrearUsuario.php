@@ -65,13 +65,31 @@ if (empty($datos['password'])) {
     exit;
 }
 
+$fechaNacimiento = trim((string)($datos['fecha_nacimiento'] ?? ''));
+if ($fechaNacimiento !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaNacimiento)) {
+    $_SESSION['error_crear'] = 'La fecha de nacimiento no tiene un formato valido.';
+    header('Location: ../vista/vistas/CrearUsuario.php');
+    exit;
+}
+
+$fechaIngreso = trim((string)($datos['fecha_ingreso'] ?? ''));
+if ($fechaIngreso !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaIngreso)) {
+    $_SESSION['error_crear'] = 'La fecha de ingreso no tiene un formato valido.';
+    header('Location: ../vista/vistas/CrearUsuario.php');
+    exit;
+}
+
 // Foto de perfil
 if (!empty($_FILES['fotoPerfil']['tmp_name'])) {
     $datos['foto_tmp']    = $_FILES['fotoPerfil']['tmp_name'];
     $datos['foto_nombre'] = $_FILES['fotoPerfil']['name'];
 }
 
-$resultado = ModeloUsuario::crearUsuario($datos);
+try {
+    $resultado = ModeloUsuario::crearUsuario($datos);
+} catch (Throwable $e) {
+    $resultado = ['error' => true, 'mensaje' => 'No se pudo crear el usuario en este momento. Intente nuevamente.'];
+}
 
 if ($resultado['error']) {
     $_SESSION['error_crear'] = $resultado['mensaje'];

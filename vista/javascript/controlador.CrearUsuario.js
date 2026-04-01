@@ -65,10 +65,25 @@ document.addEventListener('DOMContentLoaded', () => {
     formulario.addEventListener('submit', function (evento) {
         const pass     = document.getElementById('passGenerada').value;
         const confirma = document.getElementById('confirmarPass').value;
+        const fechaNacimiento = document.getElementById('fechaNacimiento').value.trim();
+        const fechaIngreso = document.getElementById('fechaIngreso').value.trim();
+        const patronFecha = /^\d{4}-\d{2}-\d{2}$/;
 
         if (pass && confirma && pass !== confirma) {
             evento.preventDefault();
             alert('Las contraseñas no coinciden. Por favor verifique.');
+            return;
+        }
+
+        if (fechaNacimiento && !patronFecha.test(fechaNacimiento)) {
+            evento.preventDefault();
+            alert('La fecha de nacimiento no es valida.');
+            return;
+        }
+
+        if (fechaIngreso && !patronFecha.test(fechaIngreso)) {
+            evento.preventDefault();
+            alert('La fecha de ingreso no es valida.');
         }
     });
 });
