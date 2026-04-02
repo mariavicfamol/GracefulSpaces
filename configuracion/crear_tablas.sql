@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS `trabajadores` (
     `fecha_ingreso`         DATE,
     -- Contacto
     `correo_personal`       VARCHAR(150),
-    `correo_corporativo`    VARCHAR(150),
     `telefono`              VARCHAR(20),
     `contacto_emergencia`   VARCHAR(150),
     `telefono_emergencia`   VARCHAR(20),

@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------
     // Referencias
     // -------------------------------------------------------
-    const selectorFoto    = document.getElementById('entradaFoto');
-    const vistaPrevia     = document.getElementById('imagenPerfil');
+    const selectorFotoId  = document.getElementById('entradaFotoIdentidad');
+    const vistaPreviaId   = document.getElementById('imagenFotoIdentidad');
+    const textoMarcadorId = document.getElementById('textoMarcadorId');
     const campoPass       = document.getElementById('campoPassword');
     const botonVerPass    = document.getElementById('botonVerPass');
     const botonGuardar    = document.getElementById('botonGuardar');
@@ -53,20 +54,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------
     // 1. Cambio de foto de perfil
     // -------------------------------------------------------
-    selectorFoto.addEventListener('change', function () {
-        const archivo = this.files[0];
-        if (archivo) {
-            if (archivo.size > TAMANO_MAX_FOTO) {
-                this.value = '';
-                mostrarMensaje(mensajeAccion, 'La imagen supera el máximo permitido de 5 MB.', true);
-                return;
-            }
+    if (selectorFotoId) {
+        selectorFotoId.addEventListener('change', function () {
+            const archivo = this.files[0];
+            if (archivo) {
+                if (archivo.size > TAMANO_MAX_FOTO) {
+                    this.value = '';
+                    mostrarMensaje(mensajeAccion, 'La foto del ID supera el máximo permitido de 5 MB.', true);
+                    return;
+                }
 
-            const lector = new FileReader();
-            lector.onload = e => { vistaPrevia.src = e.target.result; };
-            lector.readAsDataURL(archivo);
-        }
-    });
+                const lector = new FileReader();
+                lector.onload = e => {
+                    if (vistaPreviaId) vistaPreviaId.src = e.target.result;
+                    if (textoMarcadorId) textoMarcadorId.style.display = 'none';
+                };
+                lector.readAsDataURL(archivo);
+            }
+        });
+    }
 
     // -------------------------------------------------------
     // 2. Solo números
@@ -114,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const u = data.usuario;
             document.getElementById('idUsuario').value        = u.id;
             document.getElementById('fotoActual').value       = u.foto_perfil || '';
+            const fotoIdActual = u.foto_perfil || '';
+            const fotoIdActualCampo = document.getElementById('fotoIdentidadActual');
+            if (fotoIdActualCampo) fotoIdActualCampo.value = fotoIdActual;
             document.getElementById('idEmpresa').value        = u.id_empresa || '';
             document.getElementById('nombreUsuario').value    = u.nombre || '';
             document.getElementById('apellido1').value        = u.apellido1 || '';
@@ -122,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('fechaNacimiento').value  = u.fecha_nacimiento || '';
             document.getElementById('fechaIngreso').value     = u.fecha_ingreso || '';
             document.getElementById('correoPersonal').value   = u.correo_personal || '';
-            document.getElementById('correoCorporativo').value = u.correo_corporativo || '';
             document.getElementById('telefono').value         = u.telefono || '';
             document.getElementById('nombreEmergencia').value = u.contacto_emergencia || '';
             document.getElementById('telefonoEmergencia').value = u.telefono_emergencia || '';
@@ -132,16 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
             setSelect('tipoDocumento',    u.tipo_documento);
             setSelect('generoUsuario',    u.genero || 'Prefiero no decir');
             setSelect('nacionalidadUsuario', u.nacionalidad);
-            setSelect('cargoPuesto',      u.cargo);
+            const cargoNormalizado = (u.cargo === 'Trabajador') ? 'Trabajador' : 'Administrador';
+            setSelect('cargoPuesto',      cargoNormalizado);
             setSelect('tipoContrato',     u.tipo_contrato);
-            setSelect('rolSistema',       u.rol);
+            const rolNormalizado = (u.rol === 'Trabajador') ? 'Trabajador' : 'Administrador';
+            setSelect('rolSistema',       rolNormalizado);
             setSelect('estadoCuenta',     u.estado);
 
             // Foto
-            if (u.foto_perfil) {
-                vistaPrevia.src = '../../' + u.foto_perfil;
-            } else {
-                vistaPrevia.src = 'https://via.placeholder.com/125';
+            if (vistaPreviaId) {
+                if (u.foto_perfil) {
+                    vistaPreviaId.src = '../../' + u.foto_perfil;
+                    vistaPreviaId.style.display = 'block';
+                    if (textoMarcadorId) textoMarcadorId.style.display = 'none';
+                } else {
+                    vistaPreviaId.src = 'https://via.placeholder.com/125';
+                    if (textoMarcadorId) textoMarcadorId.style.display = 'block';
+                }
             }
 
             mostrarMensaje(mensajeBusqueda, `Colaborador "${u.nombre} ${u.apellido1}" cargado correctamente.`);
@@ -219,7 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('¿Descartar todos los cambios?')) {
             document.getElementById('formularioEditar').reset();
             document.getElementById('idUsuario').value = '';
-            vistaPrevia.src = 'https://via.placeholder.com/125';
+            if (vistaPreviaId) {
+                vistaPreviaId.src = 'https://via.placeholder.com/125';
+            }
             mensajeAccion.style.display = 'none';
         }
     });

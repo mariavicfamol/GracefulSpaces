@@ -37,7 +37,6 @@ $datos = [
     'tipo_contrato'         => $_POST['tipoContrato']              ?? 'Tiempo completo',
     'fecha_ingreso'         => $_POST['fechaIngreso']              ?? null,
     'correo_personal'       => trim($_POST['correoPersonal']       ?? ''),
-    'correo_corporativo'    => trim($_POST['correoCorporativo']    ?? ''),
     'telefono'              => trim($_POST['telefono']             ?? ''),
     'contacto_emergencia'   => trim($_POST['nombreEmergencia']     ?? ''),
     'telefono_emergencia'   => trim($_POST['telefonoEmergencia']   ?? ''),
@@ -65,6 +64,20 @@ if (empty($datos['password'])) {
     exit;
 }
 
+$rolesPermitidos = ['Administrador', 'Trabajador'];
+if (!in_array($datos['rol'], $rolesPermitidos, true)) {
+    $_SESSION['error_crear'] = 'El rol seleccionado no es válido.';
+    header('Location: ../vista/vistas/CrearUsuario.php');
+    exit;
+}
+
+$cargosPermitidos = ['Administrador', 'Trabajador'];
+if (!in_array($datos['cargo'], $cargosPermitidos, true)) {
+    $_SESSION['error_crear'] = 'El cargo seleccionado no es válido.';
+    header('Location: ../vista/vistas/CrearUsuario.php');
+    exit;
+}
+
 $fechaNacimiento = trim((string)($datos['fecha_nacimiento'] ?? ''));
 if ($fechaNacimiento !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaNacimiento)) {
     $_SESSION['error_crear'] = 'La fecha de nacimiento no tiene un formato valido.';
@@ -79,10 +92,10 @@ if ($fechaIngreso !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaIngreso))
     exit;
 }
 
-// Foto de perfil
-if (!empty($_FILES['fotoPerfil']['tmp_name'])) {
-    $datos['foto_tmp']    = $_FILES['fotoPerfil']['tmp_name'];
-    $datos['foto_nombre'] = $_FILES['fotoPerfil']['name'];
+// Foto del ID
+if (!empty($_FILES['fotoIdentidad']['tmp_name'])) {
+    $datos['foto_tmp']    = $_FILES['fotoIdentidad']['tmp_name'];
+    $datos['foto_nombre'] = $_FILES['fotoIdentidad']['name'];
 }
 
 try {

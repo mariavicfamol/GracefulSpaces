@@ -28,7 +28,7 @@ class ModeloUsuario {
             // Hash de contraseña
             $passwordHash = password_hash($datos['password'], PASSWORD_BCRYPT, ['cost' => 12]);
 
-            // Guardar foto si viene
+            // Guardar foto del ID en la columna existente foto_perfil
             $rutaFoto = null;
             if (!empty($datos['foto_tmp']) && !empty($datos['foto_nombre'])) {
                 $rutaFoto = self::guardarFoto($datos['foto_tmp'], $datos['foto_nombre']);
@@ -39,18 +39,19 @@ class ModeloUsuario {
                         tipo_documento, numero_identificacion, fecha_nacimiento,
                         sexo, genero, nacionalidad,
                         cargo, tipo_contrato, fecha_ingreso,
-                        correo_personal, correo_corporativo, telefono,
+                        correo_personal, telefono,
                         contacto_emergencia, telefono_emergencia, direccion,
                         login_usuario, password_hash, rol, estado, foto_perfil
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conexion->prepare($sql);
             if (!$stmt) {
                 return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
             }
 
+            $tiposCrear = str_repeat('s', 23);
             $stmt->bind_param(
-                'ssssssssssssssssssssssss',
+                $tiposCrear,
                 $idEmpresa,
                 $datos['nombre'],
                 $datos['apellido1'],
@@ -65,7 +66,6 @@ class ModeloUsuario {
                 $datos['tipo_contrato'],
                 $fechaIngreso,
                 $datos['correo_personal'],
-                $datos['correo_corporativo'],
                 $datos['telefono'],
                 $datos['contacto_emergencia'],
                 $datos['telefono_emergencia'],
@@ -174,7 +174,7 @@ class ModeloUsuario {
                         tipo_documento = ?, numero_identificacion = ?, fecha_nacimiento = ?,
                         sexo = ?, genero = ?, nacionalidad = ?,
                         cargo = ?, tipo_contrato = ?, fecha_ingreso = ?,
-                        correo_personal = ?, correo_corporativo = ?, telefono = ?,
+                        correo_personal = ?, telefono = ?,
                         contacto_emergencia = ?, telefono_emergencia = ?, direccion = ?,
                         login_usuario = ?, rol = ?, estado = ?, foto_perfil = ?
                         $sqlPassword
@@ -186,26 +186,28 @@ class ModeloUsuario {
             }
 
             if (!empty($datos['password'])) {
+                $tiposActualizacionConPassword = str_repeat('s', 22) . 'i';
                 $stmt->bind_param(
-                    'sssssssssssssssssssssssi',
+                    $tiposActualizacionConPassword,
                     $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
                     $datos['tipo_documento'], $datos['numero_identificacion'], $fechaNacimiento,
                     $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
                     $datos['cargo'], $datos['tipo_contrato'], $fechaIngreso,
-                    $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
+                    $datos['correo_personal'], $datos['telefono'],
                     $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
                     $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
                     $datos['password_hash'],
                     $id
                 );
             } else {
+                $tiposActualizacionSinPassword = str_repeat('s', 21) . 'i';
                 $stmt->bind_param(
-                    'ssssssssssssssssssssssi',
+                    $tiposActualizacionSinPassword,
                     $datos['nombre'], $datos['apellido1'], $datos['apellido2'],
                     $datos['tipo_documento'], $datos['numero_identificacion'], $fechaNacimiento,
                     $datos['sexo'], $datos['genero'], $datos['nacionalidad'],
                     $datos['cargo'], $datos['tipo_contrato'], $fechaIngreso,
-                    $datos['correo_personal'], $datos['correo_corporativo'], $datos['telefono'],
+                    $datos['correo_personal'], $datos['telefono'],
                     $datos['contacto_emergencia'], $datos['telefono_emergencia'], $datos['direccion'],
                     $datos['login_usuario'], $datos['rol'], $datos['estado'], $rutaFoto,
                     $id
@@ -261,6 +263,67 @@ class ModeloUsuario {
             return $usuario;
         }
         return null;
+    }
+
+    // -------------------------------------------------------
+    // RESTABLECER contraseña
+    // -------------------------------------------------------
+    public static function restablecerContrasena(string $login, string $fechaNacimiento, string $nuevaContrasena): array {
+        $conexion = obtenerConexion();
+        $stmt = null;
+
+        $login = trim($login);
+        $fechaNacimiento = self::normalizarFecha($fechaNacimiento);
+
+        if (!filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $conexion->close();
+            return ['error' => true, 'mensaje' => 'Debe ingresar un correo valido.'];
+        }
+
+        if (!self::esFechaValida($fechaNacimiento)) {
+            $conexion->close();
+            return ['error' => true, 'mensaje' => 'La fecha de nacimiento no es valida.'];
+        }
+
+        if (strlen($nuevaContrasena) < 8) {
+            $conexion->close();
+            return ['error' => true, 'mensaje' => 'La nueva contraseña debe tener al menos 8 caracteres.'];
+        }
+
+        try {
+            $stmt = $conexion->prepare("SELECT id FROM trabajadores WHERE login_usuario = ? AND fecha_nacimiento = ? LIMIT 1");
+            if (!$stmt) {
+                return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
+            }
+
+            $stmt->bind_param('ss', $login, $fechaNacimiento);
+            $stmt->execute();
+            $usuario = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $stmt = null;
+
+            if (!$usuario) {
+                return ['error' => true, 'mensaje' => 'No se pudo verificar la informacion proporcionada.'];
+            }
+
+            $hash = password_hash($nuevaContrasena, PASSWORD_BCRYPT, ['cost' => 12]);
+            $stmt = $conexion->prepare("UPDATE trabajadores SET password_hash = ? WHERE id = ? LIMIT 1");
+            if (!$stmt) {
+                return ['error' => true, 'mensaje' => 'Error preparando consulta: ' . $conexion->error];
+            }
+
+            $stmt->bind_param('si', $hash, $usuario['id']);
+            $stmt->execute();
+
+            return ['error' => false, 'mensaje' => 'La contraseña ha sido actualizada correctamente.'];
+        } catch (mysqli_sql_exception $e) {
+            return ['error' => true, 'mensaje' => 'No se pudo restablecer la contraseña en este momento.'];
+        } finally {
+            if ($stmt instanceof mysqli_stmt) {
+                $stmt->close();
+            }
+            $conexion->close();
+        }
     }
 
     // -------------------------------------------------------

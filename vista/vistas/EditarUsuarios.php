@@ -48,14 +48,17 @@ if ($rol === 'Trabajador') {
         <input type="hidden" id="idUsuario" name="id">
         <input type="hidden" id="fotoActual" name="fotoActual">
         
-        <div class="subir-foto-perfil">
-            <div class="vista-previa-foto" id="cuadroVistaPrevia">
-                <img id="imagenPerfil" src="https://via.placeholder.com/125" alt="">
+        <div class="contenedor-fotos">
+            <div class="subir-foto-perfil">
+                <input type="hidden" id="fotoIdentidadActual" name="fotoIdentidadActual">
+                <div class="vista-previa-foto" id="cuadroVistaPreviaId">
+                    <img id="imagenFotoIdentidad" src="https://via.placeholder.com/125" alt="">
+                </div>
+                <label class="boton-subir">
+                    Actualizar Foto del ID
+                    <input type="file" name="fotoIdentidad" id="entradaFotoIdentidad" accept="image/*" style="display: none;">
+                </label>
             </div>
-            <label class="boton-subir">
-                Actualizar Imagen
-                <input type="file" name="fotoPerfil" id="entradaFoto" accept="image/*" style="display: none;">
-            </label>
         </div>
 
         <div class="titulo-seccion">1. Información Personal</div>
@@ -117,7 +120,6 @@ if ($rol === 'Trabajador') {
                 <label>Cargo / Puesto</label>
                 <select name="cargoPuesto" id="cargoPuesto">
                     <option>Administrador</option>
-                    <option>Supervisor</option>
                     <option>Trabajador</option>
                 </select>
             </div>
@@ -143,10 +145,6 @@ if ($rol === 'Trabajador') {
             <div class="grupo-campo">
                 <label>Correo Personal</label>
                 <input type="email" name="correoPersonal" id="correoPersonal">
-            </div>
-            <div class="grupo-campo">
-                <label>Correo Corporativo</label>
-                <input type="email" name="correoCorporativo" id="correoCorporativo">
             </div>
             <div class="grupo-campo">
                 <label>Teléfono</label>
@@ -182,9 +180,7 @@ if ($rol === 'Trabajador') {
             <div class="grupo-campo">
                 <label>Rol de Usuario</label>
                 <select name="rolSistema" id="rolSistema">
-                    <option>Administrador Total</option>
                     <option>Administrador</option>
-                    <option>Supervisor</option>
                     <option>Trabajador</option>
                 </select>
             </div>

@@ -104,6 +104,14 @@ h1 {
 }
 
 /* Foto de Perfil */
+.contenedor-fotos {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
 .subir-foto-perfil {
     display: flex;
     flex-direction: column;
@@ -263,6 +271,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Adaptabilidad para móviles */
 @media (max-width: 850px) {
+    .contenedor-fotos { gap: 20px; }
     .rejilla-formulario { grid-template-columns: repeat(2, 1fr); }
     .navegacion-superior { justify-content: center; }
 }

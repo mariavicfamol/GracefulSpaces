@@ -16,22 +16,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── 2. Previsualización de fotografía ──
-    const entradaFoto   = document.getElementById('entradaFoto');
-    const imagenPerfil  = document.getElementById('imagenPerfil');
-    const textoMarcador = document.getElementById('textoMarcador');
+    const entradaFotoIdentidad   = document.getElementById('entradaFotoIdentidad');
+    const imagenFotoIdentidad    = document.getElementById('imagenFotoIdentidad');
+    const textoMarcadorId        = document.getElementById('textoMarcadorId');
 
-    entradaFoto.addEventListener('change', function () {
-        const archivo = this.files[0];
-        if (archivo) {
-            const lector = new FileReader();
-            lector.onload = function (evento) {
-                imagenPerfil.src = evento.target.result;
-                imagenPerfil.style.display = 'block';
-                if (textoMarcador) textoMarcador.style.display = 'none';
-            };
-            lector.readAsDataURL(archivo);
-        }
-    });
+    if (entradaFotoIdentidad) {
+        entradaFotoIdentidad.addEventListener('change', function () {
+            const archivo = this.files[0];
+            if (archivo) {
+                const lector = new FileReader();
+                lector.onload = function (evento) {
+                    if (imagenFotoIdentidad) {
+                        imagenFotoIdentidad.src = evento.target.result;
+                        imagenFotoIdentidad.style.display = 'block';
+                    }
+                    if (textoMarcadorId) textoMarcadorId.style.display = 'none';
+                };
+                lector.readAsDataURL(archivo);
+            }
+        });
+    }
 
     // ── 3. Solo números en campos específicos ──
     const restringirSoloNumeros = (idCampo) => {

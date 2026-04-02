@@ -6,7 +6,9 @@ if (!empty($_SESSION['usuario'])) {
     exit;
 }
 $errorLogin = $_SESSION['error_login'] ?? '';
+$exitoLogin = $_SESSION['exito_login'] ?? '';
 unset($_SESSION['error_login']);
+unset($_SESSION['exito_login']);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -34,6 +36,9 @@ unset($_SESSION['error_login']);
             <?php if ($errorLogin): ?>
                 <div class="mensaje-error"><?= htmlspecialchars($errorLogin) ?></div>
             <?php endif; ?>
+            <?php if ($exitoLogin): ?>
+                <div class="mensaje-exito" style="background:#eaf7ee;color:#1e7e34;border:1px solid #28a745;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.87rem;font-weight:500;"><?= htmlspecialchars($exitoLogin) ?></div>
+            <?php endif; ?>
 
             <form id="formulario-login" method="POST" action="../../controlador/controlador.Login.php">
                 <div class="grupo-entrada">
@@ -50,7 +55,7 @@ unset($_SESSION['error_login']);
                     <label class="recordarme">
                         <input type="checkbox"> Recordarme
                     </label>
-                    <a href="Contacto.php" class="enlace-secundario">¿Ha olvidado su contraseña?</a>
+                    <a href="RestablecerContrasena.php" class="enlace-secundario">¿Ha olvidado su contraseña?</a>
                 </div>
 
                 <button type="submit" class="boton-primario">Iniciar Sesión</button>

@@ -47,15 +47,16 @@ unset($_SESSION['error_crear'], $_SESSION['exito_crear']);
 
     <form id="formularioUsuario" method="POST" action="../../controlador/controlador.CrearUsuario.php" enctype="multipart/form-data">
         
-        <div class="subir-foto-perfil">
-            <div class="vista-previa-foto" id="cuadroVistaPrevia">
-                <img id="imagenPerfil" src="" alt="Previsualización" style="display: none;">
-                <span id="textoMarcador"></span>
+        <div class="contenedor-fotos">
+            <div class="subir-foto-perfil">
+                <div class="vista-previa-foto" id="cuadroVistaPreviaId">
+                    <img id="imagenFotoIdentidad" src="" alt="Previsualización ID" style="display: none;">
+                </div>
+                <label class="boton-subir">
+                    Subir Foto del ID
+                    <input type="file" name="fotoIdentidad" id="entradaFotoIdentidad" accept="image/*" style="display: none;">
+                </label>
             </div>
-            <label class="boton-subir">
-                Subir Fotografía
-                <input type="file" name="fotoPerfil" id="entradaFoto" accept="image/*" style="display: none;">
-            </label>
         </div>
 
         <div class="titulo-seccion">1. Información Personal</div>
@@ -117,7 +118,6 @@ unset($_SESSION['error_crear'], $_SESSION['exito_crear']);
                 <label>Cargo / Puesto</label>
                 <select name="cargoPuesto" id="cargoPuesto">
                     <option>Administrador</option>
-                    <option>Supervisor</option>
                     <option>Trabajador</option>
                 </select>
             </div>
@@ -143,10 +143,6 @@ unset($_SESSION['error_crear'], $_SESSION['exito_crear']);
             <div class="grupo-campo">
                 <label>Correo personal</label>
                 <input type="email" name="correoPersonal" id="correoPersonal">
-            </div>
-            <div class="grupo-campo">
-                <label>Correo corporativo</label>
-                <input type="email" name="correoCorporativo" id="correoCorporativo">
             </div>
             <div class="grupo-campo">
                 <label>Teléfono</label>
@@ -186,9 +182,7 @@ unset($_SESSION['error_crear'], $_SESSION['exito_crear']);
             <div class="grupo-campo">
                 <label>Rol de Usuario</label>
                 <select name="rolSistema" id="rolSistema">
-                    <option>Administrador Total</option>
                     <option>Administrador</option>
-                    <option>Supervisor</option>
                     <option selected>Trabajador</option>
                 </select>
             </div>

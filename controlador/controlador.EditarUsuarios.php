@@ -14,6 +14,22 @@ function esAccionAjaxUsuarios(string $accion): bool {
     return in_array($accion, ['buscar', 'actualizar', 'darDeBaja'], true);
 }
 
+function normalizarRolUsuario(string $rol): string {
+    if ($rol === 'Trabajador') {
+        return 'Trabajador';
+    }
+
+    return 'Administrador';
+}
+
+function normalizarCargoUsuario(string $cargo): string {
+    if ($cargo === 'Trabajador') {
+        return 'Trabajador';
+    }
+
+    return 'Administrador';
+}
+
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 $accionAjax = esAccionAjaxUsuarios($accion);
 
@@ -84,36 +100,34 @@ if ($accion === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'sexo'                  => $_POST['sexoUsuario']               ?? 'Prefiero no decir',
         'genero'                => trim($_POST['generoUsuario']        ?? ''),
         'nacionalidad'          => $_POST['nacionalidadUsuario']       ?? 'Costa Rica',
-        'cargo'                 => $_POST['cargoPuesto']               ?? 'Trabajador',
+        'cargo'                 => normalizarCargoUsuario($_POST['cargoPuesto'] ?? 'Trabajador'),
         'tipo_contrato'         => $_POST['tipoContrato']              ?? 'Tiempo completo',
         'fecha_ingreso'         => $_POST['fechaIngreso']              ?? null,
         'correo_personal'       => trim($_POST['correoPersonal']       ?? ''),
-        'correo_corporativo'    => trim($_POST['correoCorporativo']    ?? ''),
         'telefono'              => trim($_POST['telefono']             ?? ''),
         'contacto_emergencia'   => trim($_POST['nombreEmergencia']     ?? ''),
         'telefono_emergencia'   => trim($_POST['telefonoEmergencia']   ?? ''),
         'direccion'             => trim($_POST['direccionExacta']      ?? ''),
         'login_usuario'         => trim($_POST['nombreAcceso']         ?? ''),
         'password'              => $_POST['campoPassword']             ?? '',
-        'rol'                   => $_POST['rolSistema']                ?? 'Trabajador',
+        'rol'                   => normalizarRolUsuario($_POST['rolSistema'] ?? 'Trabajador'),
         'estado'                => $_POST['estadoCuenta']              ?? 'Activo',
-        'foto_actual'           => $_POST['fotoActual']                ?? null,
+        'foto_actual'           => $_POST['fotoIdentidadActual']       ?? ($_POST['fotoActual'] ?? null),
     ];
 
-    // Foto actualizada
-    if (isset($_FILES['fotoPerfil']) && ($_FILES['fotoPerfil']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
-        $errorSubida = (int)($_FILES['fotoPerfil']['error'] ?? UPLOAD_ERR_OK);
+    if (isset($_FILES['fotoIdentidad']) && ($_FILES['fotoIdentidad']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+        $errorSubidaId = (int)($_FILES['fotoIdentidad']['error'] ?? UPLOAD_ERR_OK);
 
-        if ($errorSubida !== UPLOAD_ERR_OK) {
-            $mensaje = 'No se pudo subir la imagen seleccionada.';
-            if ($errorSubida === UPLOAD_ERR_INI_SIZE || $errorSubida === UPLOAD_ERR_FORM_SIZE) {
-                $mensaje = 'La imagen supera el tamaño máximo permitido por el servidor.';
+        if ($errorSubidaId !== UPLOAD_ERR_OK) {
+            $mensaje = 'No se pudo subir la foto del ID seleccionada.';
+            if ($errorSubidaId === UPLOAD_ERR_INI_SIZE || $errorSubidaId === UPLOAD_ERR_FORM_SIZE) {
+                $mensaje = 'La foto del ID supera el tamaño máximo permitido por el servidor.';
             }
             responderJson(413, ['error' => true, 'mensaje' => $mensaje]);
         }
 
-        $datos['foto_tmp']    = $_FILES['fotoPerfil']['tmp_name'];
-        $datos['foto_nombre'] = $_FILES['fotoPerfil']['name'];
+        $datos['foto_tmp']    = $_FILES['fotoIdentidad']['tmp_name'];
+        $datos['foto_nombre'] = $_FILES['fotoIdentidad']['name'];
     }
 
     if (empty($datos['nombre']) || empty($datos['apellido1'])) {

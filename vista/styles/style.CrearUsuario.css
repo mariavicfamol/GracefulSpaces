@@ -70,6 +70,14 @@ h1 {
 }
 
 /* Sección Fotografía */
+.contenedor-fotos {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 36px;
+    flex-wrap: wrap;
+}
+
 .subir-foto-perfil {
     display: flex;
     flex-direction: column;
@@ -217,6 +225,9 @@ input:focus, select:focus {
 
 /* Responsivo para móviles */
 @media (max-width: 768px) {
+    .contenedor-fotos {
+        gap: 20px;
+    }
     .rejilla-formulario {
         grid-template-columns: 1fr;
     }
