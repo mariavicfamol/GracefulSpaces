@@ -16,7 +16,8 @@ if (!in_array($rol, ['Trabajador', 'Supervisor'], true)) {
 }
 
 $idTrabajador = (int)($usuario['id'] ?? 0);
-$planillas = ModeloPlanilla::obtenerPlanillasPorTrabajador($idTrabajador);
+$planillas = ModeloPlanilla::obtenerPlanillasPorTrabajador($idTrabajador, true);
+$cssVersion = @filemtime(__DIR__ . '/../styles/style.MisPlanillas.css') ?: time();
 
 $error = $_SESSION['error_mi_historial_pagos'] ?? '';
 $exito = $_SESSION['exito_mi_historial_pagos'] ?? '';
@@ -31,7 +32,7 @@ unset($_SESSION['error_mi_historial_pagos'], $_SESSION['exito_mi_historial_pagos
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.MisPlanillas.css">
+    <link rel="stylesheet" href="../styles/style.MisPlanillas.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 

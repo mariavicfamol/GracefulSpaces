@@ -20,7 +20,8 @@ $mes = (int)($_GET['mes'] ?? date('n'));
 $idTrabajador = (int)($_GET['trabajador'] ?? 0);
 
 $trabajadores = ModeloPlanilla::obtenerTrabajadoresActivos();
-$planillas = ModeloPlanilla::obtenerPlanillasAdmin($anio > 0 ? $anio : null, $mes > 0 ? $mes : null, $idTrabajador > 0 ? $idTrabajador : null);
+$planillas = ModeloPlanilla::obtenerPlanillasAdmin($anio > 0 ? $anio : null, $mes > 0 ? $mes : null, $idTrabajador > 0 ? $idTrabajador : null, true);
+$cssVersion = @filemtime(__DIR__ . '/../styles/custom.HistorialPagosAdmin.css') ?: time();
 
 $totalMonto = 0.0;
 foreach ($planillas as $planilla) {
@@ -40,8 +41,8 @@ unset($_SESSION['error_historial_pagos'], $_SESSION['exito_historial_pagos']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.PlanillasAdmin.css">
-    <link rel="stylesheet" href="../styles/custom.HistorialPagosAdmin.css">
+    <link rel="stylesheet" href="../styles/style.PlanillasAdmin.css?v=<?= (int)(@filemtime(__DIR__ . '/../styles/style.PlanillasAdmin.css') ?: time()) ?>">
+    <link rel="stylesheet" href="../styles/custom.HistorialPagosAdmin.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 
@@ -134,7 +135,7 @@ unset($_SESSION['error_historial_pagos'], $_SESSION['exito_historial_pagos']);
                                 <td><?= date('d/m/Y H:i', strtotime($planilla['fecha_generacion'])) ?></td>
                                 <td>
                                     <a class="btn-descargar" href="../../controlador/controlador.HistorialPagos.php?accion=descargar&id=<?= (int)$planilla['id'] ?>">
-                                        Descargar Excel
+                                        Exel
                                     </a>
                                 </td>
                             </tr>

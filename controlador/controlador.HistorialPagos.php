@@ -35,6 +35,12 @@ if ($accion === 'descargar') {
         exit;
     }
 
+    if ((int)($planilla['aprobada'] ?? 0) !== 1) {
+        http_response_code(403);
+        echo 'La planilla no está aprobada para historial de pagos.';
+        exit;
+    }
+
     $mes = str_pad((string)$planilla['mes'], 2, '0', STR_PAD_LEFT);
     $archivo = 'Planilla_' . preg_replace('/[^A-Za-z0-9\-_]/', '_', $planilla['id_empresa']) . '_' . $planilla['anio'] . '_' . $mes . '.xls';
 
@@ -70,7 +76,8 @@ if ($accion === 'descargar_todo') {
     $planillas = ModeloPlanilla::obtenerPlanillasAdmin(
         $anio > 0 ? $anio : null,
         $mes > 0 ? $mes : null,
-        $idTrabajador > 0 ? $idTrabajador : null
+        $idTrabajador > 0 ? $idTrabajador : null,
+        true
     );
 
     $filtro = '';

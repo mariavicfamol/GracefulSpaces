@@ -75,9 +75,13 @@ CREATE TABLE IF NOT EXISTS `planillas_mensuales` (
     `horas_totales`         DECIMAL(10, 2) NOT NULL DEFAULT 0,
     `monto_total`           DECIMAL(12, 2) NOT NULL DEFAULT 0,
     `fecha_generacion`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `aprobada`              TINYINT(1) NOT NULL DEFAULT 0,
+    `aprobado_por`          INT NULL,
+    `fecha_aprobacion`      DATETIME NULL,
     `creado_por`            INT NULL,
     UNIQUE KEY `uniq_planilla_mes` (`id_trabajador`, `anio`, `mes`),
     INDEX `idx_periodo` (`anio`, `mes`),
+    INDEX `idx_aprobada` (`aprobada`),
     CONSTRAINT `fk_planillas_trabajador`
         FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -125,5 +129,29 @@ CREATE TABLE IF NOT EXISTS `proyecto_colaboradores` (
         FOREIGN KEY (`id_proyecto`) REFERENCES `proyectos`(`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_pc_trabajador`
         FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- Tabla de Productos Faltantes
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `productos_faltantes` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `nombre`                VARCHAR(180) NOT NULL,
+    `descripcion`           TEXT,
+    `cantidad_solicitada`   INT DEFAULT 1,
+    `estado`                ENUM('Pendiente','Comprado') DEFAULT 'Pendiente',
+    `id_trabajador`         INT NOT NULL,
+    `comprado_por`          INT NULL,
+    `fecha_solicitud`       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `fecha_compra`          DATETIME NULL,
+    `creado_en`             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `actualizado_en`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_estado` (`estado`),
+    INDEX `idx_trabajador` (`id_trabajador`),
+    INDEX `idx_fecha` (`fecha_solicitud`),
+    CONSTRAINT `fk_productos_trabajador`
+        FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_productos_comprado_por`
+        FOREIGN KEY (`comprado_por`) REFERENCES `trabajadores`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

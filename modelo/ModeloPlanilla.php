@@ -36,13 +36,16 @@ class ModeloPlanilla {
             $montoTotal = self::calcularMontoConExtras($horasTotales, $tarifaHora);
 
             $sqlPlanilla = "INSERT INTO planillas_mensuales
-                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
                             ON DUPLICATE KEY UPDATE
                                 tarifa_hora = VALUES(tarifa_hora),
                                 horas_totales = VALUES(horas_totales),
                                 monto_total = VALUES(monto_total),
                                 creado_por = VALUES(creado_por),
+                                aprobada = 0,
+                                aprobado_por = NULL,
+                                fecha_aprobacion = NULL,
                                 fecha_generacion = CURRENT_TIMESTAMP";
 
             $stmtPlanilla = $conexion->prepare($sqlPlanilla);
@@ -115,7 +118,7 @@ class ModeloPlanilla {
         return $trabajadores;
     }
 
-    public static function obtenerPlanillasAdmin(?int $anio = null, ?int $mes = null, ?int $idTrabajador = null): array {
+    public static function obtenerPlanillasAdmin(?int $anio = null, ?int $mes = null, ?int $idTrabajador = null, bool $soloAprobadas = false): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
 
@@ -133,6 +136,10 @@ class ModeloPlanilla {
             $condiciones[] = 'p.id_trabajador = ' . (int)$idTrabajador;
         }
 
+        if ($soloAprobadas) {
+            $condiciones[] = 'p.aprobada = 1';
+        }
+
         $where = implode(' AND ', $condiciones);
 
         $sql = "SELECT p.id,
@@ -143,10 +150,14 @@ class ModeloPlanilla {
                        p.horas_totales,
                        p.monto_total,
                        p.fecha_generacion,
+                      p.aprobada,
+                      p.fecha_aprobacion,
                        t.id_empresa,
-                       CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador
+                      CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador,
+                      CONCAT(ta.nombre, ' ', ta.apellido1, ' ', COALESCE(ta.apellido2, '')) AS aprobado_por_nombre
                 FROM planillas_mensuales p
                 INNER JOIN trabajadores t ON t.id = p.id_trabajador
+                  LEFT JOIN trabajadores ta ON ta.id = p.aprobado_por
                 WHERE $where
                 ORDER BY p.anio DESC, p.mes DESC, trabajador ASC";
 
@@ -161,7 +172,7 @@ class ModeloPlanilla {
         return $filas;
     }
 
-    public static function obtenerPlanillasPorTrabajador(int $idTrabajador): array {
+    public static function obtenerPlanillasPorTrabajador(int $idTrabajador, bool $soloAprobadas = false): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
 
@@ -172,9 +183,17 @@ class ModeloPlanilla {
                        p.tarifa_hora,
                        p.horas_totales,
                        p.monto_total,
-                       p.fecha_generacion
+                       p.fecha_generacion,
+                       p.aprobada,
+                       p.fecha_aprobacion
                 FROM planillas_mensuales p
-                WHERE p.id_trabajador = ?
+                WHERE p.id_trabajador = ?";
+
+        if ($soloAprobadas) {
+            $sql .= ' AND p.aprobada = 1';
+        }
+
+        $sql .= "
                 ORDER BY p.anio DESC, p.mes DESC";
 
         $stmt = $conexion->prepare($sql);
@@ -205,10 +224,14 @@ class ModeloPlanilla {
                                p.horas_totales,
                                p.monto_total,
                                p.fecha_generacion,
+                               p.aprobada,
+                               p.fecha_aprobacion,
                                t.id_empresa,
-                               CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador
+                               CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador,
+                               CONCAT(ta.nombre, ' ', ta.apellido1, ' ', COALESCE(ta.apellido2, '')) AS aprobado_por_nombre
                         FROM planillas_mensuales p
                         INNER JOIN trabajadores t ON t.id = p.id_trabajador
+                           LEFT JOIN trabajadores ta ON ta.id = p.aprobado_por
                         WHERE p.id = ?
                         LIMIT 1";
 
@@ -243,6 +266,47 @@ class ModeloPlanilla {
 
         $cabecera['detalles'] = $detalles;
         return $cabecera;
+    }
+
+    public static function aprobarPlanilla(int $idPlanilla, int $idAdmin): array {
+        if ($idPlanilla <= 0 || $idAdmin <= 0) {
+            return ['error' => true, 'mensaje' => 'Datos inválidos para aprobar la planilla.'];
+        }
+
+        $conexion = obtenerConexion();
+        self::asegurarTablas($conexion);
+
+        try {
+            $sql = "UPDATE planillas_mensuales
+                    SET aprobada = 1,
+                        aprobado_por = ?,
+                        fecha_aprobacion = NOW()
+                    WHERE id = ?";
+
+            $stmt = $conexion->prepare($sql);
+            if (!$stmt) {
+                return ['error' => true, 'mensaje' => 'No fue posible preparar la aprobación de la nómina.'];
+            }
+
+            $stmt->bind_param('ii', $idAdmin, $idPlanilla);
+            $ok = $stmt->execute();
+            $filas = $stmt->affected_rows;
+            $stmt->close();
+
+            if (!$ok) {
+                return ['error' => true, 'mensaje' => 'No se pudo aprobar la nómina.'];
+            }
+
+            if ($filas <= 0) {
+                return ['error' => true, 'mensaje' => 'La nómina no existe o ya estaba aprobada.'];
+            }
+
+            return ['error' => false, 'mensaje' => 'Nómina aprobada correctamente.'];
+        } catch (Throwable $e) {
+            return ['error' => true, 'mensaje' => 'Error al aprobar la nómina: ' . $e->getMessage()];
+        } finally {
+            $conexion->close();
+        }
     }
 
     private static function obtenerTrabajadoresActivosInterno(mysqli $conexion): array {
@@ -337,9 +401,13 @@ class ModeloPlanilla {
                              horas_totales DECIMAL(10,2) NOT NULL DEFAULT 0,
                              monto_total DECIMAL(12,2) NOT NULL DEFAULT 0,
                              fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                             aprobada TINYINT(1) NOT NULL DEFAULT 0,
+                             aprobado_por INT NULL,
+                             fecha_aprobacion DATETIME NULL,
                              creado_por INT NULL,
                              UNIQUE KEY uniq_planilla_mes (id_trabajador, anio, mes),
                              INDEX idx_periodo (anio, mes),
+                             INDEX idx_aprobada (aprobada),
                              CONSTRAINT fk_planillas_trabajador FOREIGN KEY (id_trabajador)
                                  REFERENCES trabajadores(id) ON DELETE CASCADE
                          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
@@ -360,5 +428,56 @@ class ModeloPlanilla {
         $conexion->query($sqlMarcaciones);
         $conexion->query($sqlPlanillas);
         $conexion->query($sqlDetalles);
+
+        self::asegurarColumnaPlanillas($conexion, 'aprobada', 'TINYINT(1) NOT NULL DEFAULT 0');
+        self::asegurarColumnaPlanillas($conexion, 'aprobado_por', 'INT NULL');
+        self::asegurarColumnaPlanillas($conexion, 'fecha_aprobacion', 'DATETIME NULL');
+        self::asegurarIndicePlanillas($conexion, 'idx_aprobada', '(aprobada)');
+    }
+
+    private static function asegurarColumnaPlanillas(mysqli $conexion, string $columna, string $definicion): void {
+        $sql = "SELECT 1
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'planillas_mensuales'
+                  AND COLUMN_NAME = ?
+                LIMIT 1";
+
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            return;
+        }
+
+        $stmt->bind_param('s', $columna);
+        $stmt->execute();
+        $existe = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$existe) {
+            $conexion->query('ALTER TABLE planillas_mensuales ADD COLUMN ' . $columna . ' ' . $definicion);
+        }
+    }
+
+    private static function asegurarIndicePlanillas(mysqli $conexion, string $indice, string $columnas): void {
+        $sql = "SELECT 1
+                FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                  AND TABLE_NAME = 'planillas_mensuales'
+                  AND INDEX_NAME = ?
+                LIMIT 1";
+
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            return;
+        }
+
+        $stmt->bind_param('s', $indice);
+        $stmt->execute();
+        $existe = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$existe) {
+            $conexion->query('CREATE INDEX ' . $indice . ' ON planillas_mensuales ' . $columnas);
+        }
     }
 }

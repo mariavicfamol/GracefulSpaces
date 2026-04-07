@@ -17,6 +17,47 @@ $esEmpleado = in_array($rol, ['Trabajador', 'Supervisor'], true);
 
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 
+if ($accion === 'aprobar') {
+    if (!$esAdmin) {
+        http_response_code(403);
+        header('Location: ../vista/vistas/HomeAdminTotal.php');
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: ../vista/vistas/PlanillasAdmin.php');
+        exit;
+    }
+
+    $idPlanilla = (int)($_POST['id_planilla'] ?? 0);
+    $resultado = ModeloPlanilla::aprobarPlanilla($idPlanilla, $idUsuario);
+
+    if ($resultado['error']) {
+        $_SESSION['error_planilla_admin'] = $resultado['mensaje'];
+    } else {
+        $_SESSION['exito_planilla_admin'] = $resultado['mensaje'];
+    }
+
+    $anioRedir = (int)($_POST['anio'] ?? 0);
+    $mesRedir = (int)($_POST['mes'] ?? 0);
+    $trabajadorRedir = (int)($_POST['trabajador'] ?? 0);
+
+    $params = [];
+    if ($anioRedir > 0) {
+        $params[] = 'anio=' . $anioRedir;
+    }
+    if ($mesRedir > 0) {
+        $params[] = 'mes=' . $mesRedir;
+    }
+    if ($trabajadorRedir > 0) {
+        $params[] = 'trabajador=' . $trabajadorRedir;
+    }
+
+    $query = empty($params) ? '' : ('?' . implode('&', $params));
+    header('Location: ../vista/vistas/PlanillasAdmin.php' . $query);
+    exit;
+}
+
 if ($accion === 'generar') {
     if (!$esAdmin) {
         http_response_code(403);

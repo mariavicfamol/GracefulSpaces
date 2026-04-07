@@ -36,6 +36,12 @@ if ($accion === 'descargar') {
         exit;
     }
 
+    if ((int)($planilla['aprobada'] ?? 0) !== 1) {
+        http_response_code(403);
+        echo 'Esta planilla todavía no ha sido aprobada por administración.';
+        exit;
+    }
+
     $mes = str_pad((string)$planilla['mes'], 2, '0', STR_PAD_LEFT);
     $archivo = 'Planilla_' . preg_replace('/[^A-Za-z0-9\-_]/', '_', $planilla['id_empresa']) . '_' . $planilla['anio'] . '_' . $mes . '.xls';
 

@@ -31,6 +31,14 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
         <nav class="menu-navegacion">
             <ul class="lista-menu">
                 <?php if ($rol !== 'Trabajador'): ?>
+                <?php if ($esAdmin): ?>
+                <li class="item-menu">
+                    <a href="DashboardAdmin.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li class="item-menu">
                     <a href="CrearUsuario.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="17" y1="11" x2="23" y2="11"></line></svg>
@@ -68,6 +76,12 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                         <span>Gestión de Proyectos</span>
                     </a>
                 </li>
+                <li class="item-menu">
+                    <a href="ProductosFaltantes.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span>Productos Faltantes</span>
+                    </a>
+                </li>
                 <?php endif; ?>
                 <?php endif; ?>
                 <?php if (in_array($rol, ['Trabajador', 'Supervisor'], true)): ?>
@@ -93,6 +107,12 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                     <a href="MisProyectos.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M3 12h18"></path><path d="M3 18h18"></path><path d="M6 6v12"></path></svg>
                         <span>Mis Proyectos</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="ProductosFaltantes.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span>Productos Faltantes</span>
                     </a>
                 </li>
                 <?php endif; ?>

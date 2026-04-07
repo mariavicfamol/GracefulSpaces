@@ -19,6 +19,7 @@ if (!in_array($rol, $rolesPermitidos, true)) {
 $idTrabajador = (int)($_GET['trabajador'] ?? 0);
 $fechaInicio = trim($_GET['fecha_inicio'] ?? '');
 $fechaFin = trim($_GET['fecha_fin'] ?? '');
+$cssVersion = @filemtime(__DIR__ . '/../styles/style.MarcacionesAdmin.css') ?: time();
 
 $trabajadores = ModeloMarcacion::obtenerTrabajadoresConMarcacion();
 $registros = ModeloMarcacion::obtenerMarcacionesParaAdmin(
@@ -59,7 +60,7 @@ function calcularHorasLaboradas(?string $entrada, ?string $salida): string {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.MarcacionesAdmin.css">
+    <link rel="stylesheet" href="../styles/style.MarcacionesAdmin.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 

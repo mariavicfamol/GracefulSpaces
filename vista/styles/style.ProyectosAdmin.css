@@ -41,8 +41,23 @@ header p {
     background: #fff;
     border: 1px solid #d8decf;
     border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 4px 14px rgba(40, 62, 18, 0.06);
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(40, 62, 18, 0.08);
+}
+
+.tarjeta-formulario {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdf8 100%);
+}
+
+.tarjeta-formulario h2,
+.tarjeta-tabla h2 {
+    margin: 0 0 10px;
+}
+
+.descripcion-formulario {
+    margin: 0 0 16px;
+    color: #5f7050;
+    font-size: 14px;
 }
 
 .mensaje {
@@ -66,7 +81,7 @@ header p {
 .grid-formulario {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
 }
 
 .grupo-campo {
@@ -77,6 +92,7 @@ header p {
 .grupo-campo label {
     font-size: 13px;
     color: #4f5f39;
+    font-weight: 600;
 }
 
 .grupo-campo input,
@@ -86,11 +102,35 @@ header p {
     border-radius: 8px;
     padding: 10px;
     font: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grupo-campo input:focus,
+.grupo-campo textarea:focus,
+.grupo-campo select:focus {
+    border-color: #7b8f5b;
+    box-shadow: 0 0 0 3px rgba(123, 143, 91, 0.16);
+    outline: none;
+}
+
+.grupo-campo textarea {
+    min-height: 96px;
+    resize: vertical;
 }
 
 .grupo-campo small {
     color: #657556;
     font-size: 12px;
+}
+
+.grupo-campo-fecha,
+.grupo-campo-hora {
+    min-width: 0;
+}
+
+#colaboradores {
+    min-height: 132px;
+    padding: 8px;
 }
 
 .ancho-completo {
@@ -99,17 +139,27 @@ header p {
 
 .acciones {
     grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .btn-principal {
-    background: #2f7a3d;
+    background: linear-gradient(135deg, #2f7a3d 0%, #1f5f2a 100%);
     color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
+    border-radius: 10px;
+    padding: 11px 18px;
     font: inherit;
     font-weight: 600;
     cursor: pointer;
+    box-shadow: 0 6px 16px rgba(47, 122, 61, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-principal:hover {
+    background: linear-gradient(135deg, #1f5f2a 0%, #0f4a1a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(47, 122, 61, 0.3);
 }
 
 .tabla-contenedor {

@@ -17,6 +17,7 @@ if (!in_array($rol, ['Trabajador', 'Supervisor'], true)) {
 
 $idTrabajador = (int)($usuario['id'] ?? 0);
 $planillas = $idTrabajador > 0 ? ModeloPlanilla::obtenerPlanillasPorTrabajador($idTrabajador) : [];
+$cssVersion = @filemtime(__DIR__ . '/../styles/style.MisPlanillas.css') ?: time();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,7 +28,7 @@ $planillas = $idTrabajador > 0 ? ModeloPlanilla::obtenerPlanillasPorTrabajador($
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.MisPlanillas.css">
+    <link rel="stylesheet" href="../styles/style.MisPlanillas.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 

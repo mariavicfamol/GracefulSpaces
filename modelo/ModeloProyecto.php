@@ -28,6 +28,8 @@ class ModeloProyecto {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
 
+        $especificaciones = trim($datos['especificaciones'] ?? '');
+
         $disponibles = self::obtenerColaboradoresDisponiblesInterno($conexion, $datos['fecha_proyecto'], $datos['hora_proyecto']);
         $mapaDisponibles = [];
         foreach ($disponibles as $disponible) {
@@ -67,7 +69,7 @@ class ModeloProyecto {
             'sssssssi',
             $datos['nombre'],
             $datos['detalles'],
-            $datos['especificaciones'],
+            $especificaciones,
             $horarioTexto,
             $datos['fecha_proyecto'],
             $datos['hora_proyecto'],

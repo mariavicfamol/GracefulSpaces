@@ -63,7 +63,6 @@ if ($accion === 'crear') {
     $datos = [
         'nombre' => trim($_POST['nombre'] ?? ''),
         'detalles' => trim($_POST['descripcion'] ?? ($_POST['detalles'] ?? '')),
-        'especificaciones' => trim($_POST['especificaciones'] ?? ''),
         'fecha_proyecto' => trim($_POST['fecha_proyecto'] ?? ''),
         'hora_proyecto' => trim($_POST['hora_proyecto'] ?? ''),
         'materiales' => trim($_POST['materiales'] ?? ''),

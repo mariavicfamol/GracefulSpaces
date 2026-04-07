@@ -22,6 +22,7 @@ unset($_SESSION['error_proyecto_admin'], $_SESSION['exito_proyecto_admin']);
 $colaboradores = [];
 $proyectos = ModeloProyecto::obtenerProyectosAdmin();
 $hayColaboradores = !empty($colaboradores);
+$cssVersion = @filemtime(__DIR__ . '/../styles/style.ProyectosAdmin.css') ?: time();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -32,7 +33,7 @@ $hayColaboradores = !empty($colaboradores);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.ProyectosAdmin.css">
+    <link rel="stylesheet" href="../styles/style.ProyectosAdmin.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 
@@ -56,37 +57,33 @@ $hayColaboradores = !empty($colaboradores);
 
     <section class="tarjeta-formulario">
         <h2>Crear Nuevo Proyecto</h2>
+        <p class="descripcion-formulario">Completa los datos principales, define fecha y hora, y luego selecciona los colaboradores disponibles.</p>
         <form method="POST" action="../../controlador/controlador.Proyectos.php" class="grid-formulario" id="formCrearProyecto">
             <input type="hidden" name="accion" value="crear">
 
             <div class="grupo-campo ancho-completo">
                 <label for="nombre">Nombre del Proyecto</label>
-                <input type="text" id="nombre" name="nombre" required>
+                <input type="text" id="nombre" name="nombre" required placeholder="Ej: Remodelacion oficina central">
             </div>
 
-            <div class="grupo-campo">
+            <div class="grupo-campo ancho-completo">
                 <label for="descripcion">Descripcion del Proyecto</label>
-                <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+                <textarea id="descripcion" name="descripcion" rows="3" required placeholder="Resumen del alcance y tareas principales del proyecto..."></textarea>
             </div>
 
-            <div class="grupo-campo">
-                <label for="especificaciones">Especificaciones</label>
-                <textarea id="especificaciones" name="especificaciones" rows="4"></textarea>
-            </div>
-
-            <div class="grupo-campo">
+            <div class="grupo-campo grupo-campo-fecha">
                 <label for="fecha_proyecto">Fecha del Proyecto</label>
                 <input type="date" id="fecha_proyecto" name="fecha_proyecto" required>
             </div>
 
-            <div class="grupo-campo">
+            <div class="grupo-campo grupo-campo-hora">
                 <label for="hora_proyecto">Hora del Proyecto</label>
                 <input type="time" id="hora_proyecto" name="hora_proyecto" step="900" required>
             </div>
 
-            <div class="grupo-campo">
+            <div class="grupo-campo ancho-completo">
                 <label for="materiales">Materiales</label>
-                <textarea id="materiales" name="materiales" rows="4"></textarea>
+                <textarea id="materiales" name="materiales" rows="3" placeholder="Lista de materiales o recursos necesarios..."></textarea>
             </div>
 
             <div class="grupo-campo ancho-completo">
@@ -128,7 +125,6 @@ $hayColaboradores = !empty($colaboradores);
                                 <td>
                                     <strong><?= htmlspecialchars($proyecto['nombre']) ?></strong>
                                     <div class="subtexto"><?= nl2br(htmlspecialchars($proyecto['detalles'] ?: 'Sin detalles')) ?></div>
-                                    <div class="subtexto"><?= nl2br(htmlspecialchars($proyecto['especificaciones'] ?: 'Sin especificaciones')) ?></div>
                                 </td>
                                 <td><?= htmlspecialchars($proyecto['estado_general']) ?></td>
                                 <td>

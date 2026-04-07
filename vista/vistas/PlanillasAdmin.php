@@ -21,6 +21,7 @@ $idTrabajador = (int)($_GET['trabajador'] ?? 0);
 
 $trabajadores = ModeloPlanilla::obtenerTrabajadoresActivos();
 $planillas = ModeloPlanilla::obtenerPlanillasAdmin($anio > 0 ? $anio : null, $mes > 0 ? $mes : null, $idTrabajador > 0 ? $idTrabajador : null);
+$cssVersion = @filemtime(__DIR__ . '/../styles/style.PlanillasAdmin.css') ?: time();
 
 $error = $_SESSION['error_planilla_admin'] ?? '';
 $exito = $_SESSION['exito_planilla_admin'] ?? '';
@@ -35,7 +36,7 @@ unset($_SESSION['error_planilla_admin'], $_SESSION['exito_planilla_admin']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles/style.PlanillasAdmin.css">
+    <link rel="stylesheet" href="../styles/style.PlanillasAdmin.css?v=<?= (int)$cssVersion ?>">
 </head>
 <body>
 
@@ -129,7 +130,7 @@ unset($_SESSION['error_planilla_admin'], $_SESSION['exito_planilla_admin']);
                         <th>Tarifa/Hora</th>
                         <th>Monto Total</th>
                         <th>Generada</th>
-                        <th>Acción</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -148,9 +149,22 @@ unset($_SESSION['error_planilla_admin'], $_SESSION['exito_planilla_admin']);
                                 <td>$<?= number_format((float)$planilla['monto_total'], 2) ?></td>
                                 <td><?= date('d/m/Y H:i', strtotime($planilla['fecha_generacion'])) ?></td>
                                 <td>
-                                    <a class="btn-descargar" href="../../controlador/controlador.Planillas.php?accion=descargar&id=<?= (int)$planilla['id'] ?>">
-                                        Descargar Excel
-                                    </a>
+                                    <div class="acciones-planilla">
+                                        <?php if ((int)($planilla['aprobada'] ?? 0) !== 1): ?>
+                                            <form method="POST" action="../../controlador/controlador.Planillas.php" class="form-aprobar">
+                                                <input type="hidden" name="accion" value="aprobar">
+                                                <input type="hidden" name="id_planilla" value="<?= (int)$planilla['id'] ?>">
+                                                <input type="hidden" name="anio" value="<?= $anio ?>">
+                                                <input type="hidden" name="mes" value="<?= $mes ?>">
+                                                <input type="hidden" name="trabajador" value="<?= $idTrabajador ?>">
+                                                <button type="submit" class="btn-accion">Aprobar Nómina</button>
+                                            </form>
+                                        <?php endif; ?>
+
+                                        <a class="btn-accion" href="../../controlador/controlador.Planillas.php?accion=descargar&id=<?= (int)$planilla['id'] ?>">
+                                            Descargar Excel
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

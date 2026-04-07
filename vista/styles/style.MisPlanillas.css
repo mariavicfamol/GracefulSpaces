@@ -67,11 +67,19 @@ th {
 }
 
 .btn-descargar {
-    background: #305e9c;
+    background: linear-gradient(135deg, #1f7a4f 0%, #14663f 100%);
     color: #fff;
     border-radius: 8px;
     padding: 8px 12px;
     text-decoration: none;
     font-weight: 600;
     display: inline-block;
+    box-shadow: 0 5px 12px rgba(31, 122, 79, 0.24);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.2s ease;
+}
+
+.btn-descargar:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #17653f 0%, #0f4e30 100%);
+    box-shadow: 0 8px 16px rgba(31, 122, 79, 0.3);
 }
