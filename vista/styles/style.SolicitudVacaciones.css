@@ -1,0 +1,293 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6f0;
+    color: #253018;
+}
+
+.navegacion-superior {
+    background: #4f6a2b;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-volver-menu,
+.btn-historial {
+    color: #f4f6f0;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-volver-menu:hover,
+.btn-historial:hover {
+    opacity: 0.8;
+}
+
+.btn-salir {
+    background: #f4f6f0;
+    color: #2d3b1b;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 999px;
+    margin-left: auto;
+    transition: all 0.3s ease;
+}
+
+.btn-salir:hover {
+    opacity: 0.9;
+}
+
+.contenedor-principal {
+    width: min(1050px, 92%);
+    margin: 28px auto 42px;
+    display: grid;
+    gap: 20px;
+}
+
+.tarjeta-encabezado {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(46, 68, 24, 0.06);
+    margin-bottom: 0;
+    border: 1px solid #d8decf;
+    text-align: center;
+}
+
+.icono-vacaciones {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.tarjeta-encabezado h1 {
+    color: #4f6a2b;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+    margin: 0 0 10px;
+}
+
+.tarjeta-encabezado p {
+    color: #5a6b45;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.mensaje {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.mensaje-error {
+    background: #ffe7e7;
+    color: #8f1f1f;
+    border: 1px solid #f3c3c3;
+}
+
+.mensaje-exito {
+    background: #e8f7e8;
+    color: #1d6a2d;
+    border: 1px solid #c1e8c8;
+}
+
+.formulario-vacaciones {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(46, 68, 24, 0.06);
+    border: 1px solid #d8decf;
+}
+
+.seccion-formulario {
+    margin-bottom: 2.5rem;
+}
+
+.seccion-formulario:not(:last-child) {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e2e7db;
+}
+
+.seccion-formulario h2 {
+    color: #4f6a2b;
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.grupo-campo {
+    margin-bottom: 1.5rem;
+}
+
+.grupo-campo label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #253018;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.grupo-campo input[type="text"],
+.grupo-campo input[type="date"],
+.grupo-campo input[type="number"],
+.grupo-campo textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d8decf;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+    background: #ffffff;
+    color: #253018;
+}
+
+.grupo-campo input:focus,
+.grupo-campo textarea:focus {
+    outline: none;
+    border-color: #4f6a2b;
+    box-shadow: 0 0 0 3px rgba(79, 106, 43, 0.08);
+}
+
+.campo-lectura {
+    background: #f7f9f3;
+    cursor: not-allowed;
+    color: #5a6b45;
+}
+
+.grupo-campo small {
+    display: block;
+    margin-top: 0.3rem;
+    color: #5a6b45;
+    font-size: 0.8rem;
+}
+
+.vista-calendario {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f7f9f3;
+    border-radius: 12px;
+    border: 1px solid #d8decf;
+}
+
+.vista-calendario h3 {
+    color: #4f6a2b;
+    margin-bottom: 1rem;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+}
+
+.calendario-preview {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+}
+
+.dia-calendario {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    border: 1px solid #d8decf;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dia-calendario:hover {
+    background: #f0f0f0;
+}
+
+.dia-calendario.seleccionado {
+    background: #2f7a3d;
+    color: white;
+    border-color: #2f7a3d;
+}
+
+.seccion-acciones {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-enviar,
+.btn-cancelar {
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-enviar {
+    background: #2f7a3d;
+    color: white;
+}
+
+.btn-enviar:hover {
+    background: #1f5a2d;
+}
+
+.btn-cancelar {
+    background: #e2e7db;
+    color: #253018;
+}
+
+.btn-cancelar:hover {
+    background: #d0d5cb;
+}
+
+@media (max-width: 768px) {
+    .navegacion-superior {
+        flex-direction: column;
+        padding: 12px 16px;
+        align-items: stretch;
+    }
+
+    .btn-salir {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .contenedor-principal {
+        width: 96%;
+        margin: 16px auto 24px;
+        gap: 16px;
+    }
+
+    .formulario-vacaciones {
+        padding: 16px;
+    }
+
+    .seccion-acciones {
+        flex-direction: column;
+    }
+
+    .btn-enviar,
+    .btn-cancelar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .vista-calendario {
+        overflow-x: auto;
+    }
+}
+

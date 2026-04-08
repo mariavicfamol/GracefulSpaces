@@ -1,0 +1,63 @@
+:root {
+    --color-crema: #fdfaf5;
+    --color-verde-oliva: #556b2f;
+    --color-blanco: #ffffff;
+    --color-texto: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../../publico/imagenes/FondoLogin.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tarjeta {
+    background-color: var(--color-crema);
+    padding: 45px;
+    border-radius: 15px;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    outline: 2px solid var(--color-verde-oliva);
+    outline-offset: -15px;
+}
+
+p {
+    font-size: 1.1rem;
+    color: #333333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+    font-family: 'Poppins', sans-serif;
+}
+
+strong {
+    color: var(--color-verde-oliva);
+}
+
+.boton-volver {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: var(--color-verde-oliva);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.boton-volver:hover {
+    transform: scale(1.02);
+    background-color: #4a5d29;
+}
