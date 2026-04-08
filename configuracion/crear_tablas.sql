@@ -155,3 +155,28 @@ CREATE TABLE IF NOT EXISTS `productos_faltantes` (
         FOREIGN KEY (`comprado_por`) REFERENCES `trabajadores`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ============================================================
+-- Tabla de Solicitudes de Vacaciones
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `solicitudes_vacaciones` (
+    `id`                    INT AUTO_INCREMENT PRIMARY KEY,
+    `id_trabajador`         INT NOT NULL,
+    `fecha_inicio`          DATE NOT NULL,
+    `fecha_fin`             DATE NOT NULL,
+    `dias_solicitados`      INT NOT NULL,
+    `motivo`                TEXT,
+    `estado`                ENUM('Pendiente','Aprobada','Rechazada') DEFAULT 'Pendiente',
+    `comentario_admin`      TEXT,
+    `procesado_por`         INT NULL,
+    `fecha_procesamiento`   DATETIME NULL,
+    `creado_en`             TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `actualizado_en`        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_trabajador` (`id_trabajador`),
+    INDEX `idx_estado` (`estado`),
+    INDEX `idx_fechas` (`fecha_inicio`, `fecha_fin`),
+    CONSTRAINT `fk_vacaciones_trabajador`
+        FOREIGN KEY (`id_trabajador`) REFERENCES `trabajadores`(`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_vacaciones_procesado_por`
+        FOREIGN KEY (`procesado_por`) REFERENCES `trabajadores`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

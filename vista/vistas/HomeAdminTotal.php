@@ -82,6 +82,12 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                         <span>Productos Faltantes</span>
                     </a>
                 </li>
+                <li class="item-menu">
+                    <a href="GestionSolicitudesVacaciones.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path></svg>
+                        <span>Solicitudes de Vacaciones</span>
+                    </a>
+                </li>
                 <?php endif; ?>
                 <?php endif; ?>
                 <?php if (in_array($rol, ['Trabajador', 'Supervisor'], true)): ?>
@@ -113,6 +119,18 @@ $esAdmin = in_array($rol, ['Administrador Total', 'Administrador'], true);
                     <a href="ProductosFaltantes.php" class="enlace-menu">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                         <span>Productos Faltantes</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="SolicitudVacaciones.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path></svg>
+                        <span>Solicitar Vacaciones</span>
+                    </a>
+                </li>
+                <li class="item-menu">
+                    <a href="HistorialSolicitudesVacaciones.php" class="enlace-menu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                        <span>Mi Historial de Vacaciones</span>
                     </a>
                 </li>
                 <?php endif; ?>
