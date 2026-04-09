@@ -39,14 +39,14 @@ function etiquetaTipo(string $tipo): string {
 </head>
 <body>
     <header class="cabecera-notificaciones">
-        <div>
+        <div class="bloque-titulo-notificaciones">
+            <a href="HomeAdminTotal.php" class="btn-regresar">← Volver al Panel</a>
             <h1>Notificaciones</h1>
             <p class="subtitulo">Todas las alertas de tu cuenta se muestran aquí.</p>
         </div>
 
         <nav class="acciones-header">
-            <a href="HomeAdminTotal.php" class="btn-regresar">← Volver al Panel</a>
-            <form id="formMarcarTodas" method="POST" action="../../controlador/controlador.Notificaciones.php">
+            <form id="formMarcarTodas" class="form-marcar-todas" method="POST" action="../../controlador/controlador.Notificaciones.php">
                 <input type="hidden" name="accion" value="marcarTodasLeidas">
                 <button type="submit" class="btn-marcar-todas">Marcar todas como leídas</button>
             </form>

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
 class ModeloPlanilla {
 
-    public static function generarPlanillasMensuales(int $anio, int $mes, float $tarifaHora, array $bonosPorTrabajador, int $idGenerador): array {
+    public static function generarPlanillasMensuales(int $anio, int $mes, float $tarifaHora, array $bonosPorEmpleado, int $idGenerador): array {
         if ($anio < 2000 || $anio > 2100) {
             return ['error' => true, 'mensaje' => 'El año indicado no es válido.'];
         }
@@ -15,21 +15,6 @@ class ModeloPlanilla {
 
         if ($tarifaHora <= 0) {
             return ['error' => true, 'mensaje' => 'La tarifa por hora debe ser mayor a 0.'];
-        }
-
-        $bonosNormalizados = [];
-        foreach ($bonosPorTrabajador as $idTrabajadorBono => $bono) {
-            $idTrabajadorBono = (int)$idTrabajadorBono;
-            if ($idTrabajadorBono <= 0) {
-                continue;
-            }
-
-            $bono = round((float)$bono, 2);
-            if ($bono < 0) {
-                return ['error' => true, 'mensaje' => 'Los bonos por empleado no pueden ser negativos.'];
-            }
-
-            $bonosNormalizados[$idTrabajadorBono] = $bono;
         }
 
         $conexion = obtenerConexion();
@@ -48,16 +33,21 @@ class ModeloPlanilla {
             }
 
             $horasTotales = round($horasTotales, 2);
-            $bonoAplicado = $bonosNormalizados[$idTrabajador] ?? 0.0;
-            $montoTotal = round(self::calcularMontoConExtras($horasTotales, $tarifaHora) + $bonoAplicado, 2);
+            $montoTotal = self::calcularMontoConExtras($horasTotales, $tarifaHora);
+            
+            // Agregar bono si existe para este empleado
+            if (isset($bonosPorEmpleado[$idTrabajador])) {
+                $montoTotal += (float)$bonosPorEmpleado[$idTrabajador];
+            }
+            
+            $montoTotal = round($montoTotal, 2);
 
             $sqlPlanilla = "INSERT INTO planillas_mensuales
-                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, bono_manual, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
+                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
                             ON DUPLICATE KEY UPDATE
                                 tarifa_hora = VALUES(tarifa_hora),
                                 horas_totales = VALUES(horas_totales),
-                                bono_manual = VALUES(bono_manual),
                                 monto_total = VALUES(monto_total),
                                 creado_por = VALUES(creado_por),
                                 aprobada = 0,
@@ -66,7 +56,7 @@ class ModeloPlanilla {
                                 fecha_generacion = CURRENT_TIMESTAMP";
 
             $stmtPlanilla = $conexion->prepare($sqlPlanilla);
-            $stmtPlanilla->bind_param('iiiddddi', $idTrabajador, $anio, $mes, $tarifaHora, $horasTotales, $bonoAplicado, $montoTotal, $idGenerador);
+            $stmtPlanilla->bind_param('iiidddi', $idTrabajador, $anio, $mes, $tarifaHora, $horasTotales, $montoTotal, $idGenerador);
             $okPlanilla = $stmtPlanilla->execute();
             $stmtPlanilla->close();
 
@@ -165,7 +155,6 @@ class ModeloPlanilla {
                        p.mes,
                        p.tarifa_hora,
                        p.horas_totales,
-                       p.bono_manual,
                        p.monto_total,
                        p.fecha_generacion,
                       p.aprobada,
@@ -200,7 +189,6 @@ class ModeloPlanilla {
                        p.mes,
                        p.tarifa_hora,
                        p.horas_totales,
-                       p.bono_manual,
                        p.monto_total,
                        p.fecha_generacion,
                        p.aprobada,
@@ -241,7 +229,6 @@ class ModeloPlanilla {
                                p.mes,
                                p.tarifa_hora,
                                p.horas_totales,
-                               p.bono_manual,
                                p.monto_total,
                                p.fecha_generacion,
                                p.aprobada,
@@ -419,7 +406,6 @@ class ModeloPlanilla {
                              mes INT NOT NULL,
                              tarifa_hora DECIMAL(10,2) NOT NULL,
                              horas_totales DECIMAL(10,2) NOT NULL DEFAULT 0,
-                             bono_manual DECIMAL(10,2) NOT NULL DEFAULT 0,
                              monto_total DECIMAL(12,2) NOT NULL DEFAULT 0,
                              fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                              aprobada TINYINT(1) NOT NULL DEFAULT 0,
@@ -453,7 +439,6 @@ class ModeloPlanilla {
         self::asegurarColumnaPlanillas($conexion, 'aprobada', 'TINYINT(1) NOT NULL DEFAULT 0');
         self::asegurarColumnaPlanillas($conexion, 'aprobado_por', 'INT NULL');
         self::asegurarColumnaPlanillas($conexion, 'fecha_aprobacion', 'DATETIME NULL');
-        self::asegurarColumnaPlanillas($conexion, 'bono_manual', 'DECIMAL(10,2) NOT NULL DEFAULT 0');
         self::asegurarIndicePlanillas($conexion, 'idx_aprobada', '(aprobada)');
     }
 
