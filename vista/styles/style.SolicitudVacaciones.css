@@ -1,0 +1,490 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f6f0;
+    color: #253018;
+}
+
+.navegacion-superior {
+    background: #4f6a2b;
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-volver-menu,
+.btn-historial {
+    color: #f4f6f0;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-volver-menu:hover,
+.btn-historial:hover {
+    opacity: 0.8;
+}
+
+.btn-salir {
+    background: #f4f6f0;
+    color: #2d3b1b;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 999px;
+    margin-left: auto;
+    transition: all 0.3s ease;
+}
+
+.btn-salir:hover {
+    opacity: 0.9;
+}
+
+.contenedor-principal {
+    width: min(1050px, 92%);
+    margin: 28px auto 42px;
+    display: grid;
+    gap: 20px;
+}
+
+.tarjeta-encabezado {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(46, 68, 24, 0.06);
+    margin-bottom: 0;
+    border: 1px solid #d8decf;
+    text-align: center;
+}
+
+.icono-vacaciones {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.tarjeta-encabezado h1 {
+    color: #4f6a2b;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+    margin: 0 0 10px;
+}
+
+.tarjeta-encabezado p {
+    color: #5a6b45;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.mensaje {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.mensaje-error {
+    background: #ffe7e7;
+    color: #8f1f1f;
+    border: 1px solid #f3c3c3;
+}
+
+.mensaje-exito {
+    background: #e8f7e8;
+    color: #1d6a2d;
+    border: 1px solid #c1e8c8;
+}
+
+.formulario-vacaciones {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(46, 68, 24, 0.06);
+    border: 1px solid #d8decf;
+}
+
+.seccion-formulario {
+    margin-bottom: 2.5rem;
+}
+
+.seccion-formulario:not(:last-child) {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e2e7db;
+}
+
+.seccion-formulario h2 {
+    color: #4f6a2b;
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+    margin: 0 0 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.grupo-campo {
+    margin-bottom: 1.5rem;
+}
+
+.grupo-campo label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #253018;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.grupo-campo input[type="text"],
+.grupo-campo input[type="date"],
+.grupo-campo input[type="number"],
+.grupo-campo textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d8decf;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+    background: #ffffff;
+    color: #253018;
+}
+
+.grupo-campo input:focus,
+.grupo-campo textarea:focus {
+    outline: none;
+    border-color: #4f6a2b;
+    box-shadow: 0 0 0 3px rgba(79, 106, 43, 0.08);
+}
+
+.campo-lectura {
+    background: #f7f9f3;
+    cursor: not-allowed;
+    color: #5a6b45;
+}
+
+.grupo-campo small {
+    display: block;
+    margin-top: 0.3rem;
+    color: #5a6b45;
+    font-size: 0.8rem;
+}
+
+.vista-calendario {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #f7f9f3;
+    border-radius: 12px;
+    border: 1px solid #d8decf;
+}
+
+.vista-calendario h3 {
+    color: #4f6a2b;
+    margin-bottom: 1rem;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+}
+
+.texto-ayuda-calendario {
+    margin: -0.35rem 0 1rem;
+    color: #5a6b45;
+    font-size: 0.85rem;
+}
+
+.calendario-preview {
+    display: grid;
+    gap: 1rem;
+}
+
+.calendario-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #eaf1df 0%, #f8fbf3 100%);
+    border: 1px solid #d8decf;
+}
+
+.calendario-resumen strong {
+    color: #253018;
+    font-size: 0.95rem;
+}
+
+.calendario-resumen span {
+    color: #4f6a2b;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.calendarios-meses {
+    display: grid;
+    gap: 1rem;
+}
+
+.calendario-mes {
+    padding: 1rem;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #d8decf;
+    box-shadow: 0 4px 14px rgba(46, 68, 24, 0.05);
+}
+
+.calendario-mes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+    color: #4f6a2b;
+    font-weight: 700;
+}
+
+.calendario-mes-header span {
+    font-size: 0.95rem;
+}
+
+.calendario-mes-header small {
+    color: #6b7a58;
+    font-weight: 500;
+}
+
+.calendario-semana,
+.calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.45rem;
+}
+
+.calendario-semana {
+    margin-bottom: 0.6rem;
+}
+
+.dia-semana {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7a58;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dia-calendario {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    border: 1px solid #d8decf;
+    background: white;
+    transition: all 0.2s ease;
+    color: #253018;
+}
+
+.dia-calendario:hover {
+    background: #f4f7ee;
+}
+
+.dia-calendario.seleccionado {
+    background: #2f7a3d;
+    color: white;
+    border-color: #2f7a3d;
+}
+
+.dia-calendario.rango-inicio,
+.dia-calendario.rango-fin {
+    background: #245f30;
+    border-color: #245f30;
+    font-weight: 700;
+}
+
+.dia-calendario.fuera-rango {
+    background: #fafcf7;
+    color: #a4ae98;
+}
+
+.dia-calendario.vacio {
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.leyenda-calendario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    color: #5a6b45;
+    font-size: 0.82rem;
+}
+
+.leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.leyenda-color {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.leyenda-color.seleccionado {
+    background: #2f7a3d;
+}
+
+.leyenda-color.fuera-rango {
+    background: #dfe5d5;
+}
+
+.seccion-acciones {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-enviar,
+.btn-cancelar {
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-enviar {
+    background: #2f7a3d;
+    color: white;
+}
+
+.btn-enviar:hover {
+    background: #1f5a2d;
+}
+
+.btn-cancelar {
+    background: #e2e7db;
+    color: #253018;
+}
+
+.btn-cancelar:hover {
+    background: #d0d5cb;
+}
+
+@media (max-width: 768px) {
+    .navegacion-superior {
+        flex-direction: column;
+        padding: 12px 16px;
+        align-items: stretch;
+    }
+
+    .btn-salir {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .contenedor-principal {
+        width: 96%;
+        margin: 16px auto 24px;
+        gap: 16px;
+    }
+
+    .formulario-vacaciones {
+        padding: 16px;
+    }
+
+    .seccion-acciones {
+        flex-direction: column;
+    }
+
+    .btn-enviar,
+    .btn-cancelar {
+        width: 100%;
+        text-align: center;
+    }
+
+    .vista-calendario {
+        padding: 1rem;
+        overflow-x: hidden;
+    }
+
+    .calendario-mes {
+        min-width: 0;
+        padding: 0.75rem;
+    }
+
+    .calendario-resumen {
+        padding: 0.75rem;
+        gap: 0.45rem;
+    }
+
+    .calendario-resumen strong,
+    .calendario-resumen span {
+        width: 100%;
+        white-space: normal;
+    }
+
+    .calendario-semana,
+    .calendario-grid {
+        gap: 0.3rem;
+    }
+
+    .dia-semana {
+        font-size: 0.68rem;
+        letter-spacing: 0.01em;
+    }
+
+    .dia-calendario {
+        min-height: 34px;
+        font-size: 0.78rem;
+        border-radius: 8px;
+    }
+
+    .leyenda-calendario {
+        gap: 0.5rem 0.75rem;
+        font-size: 0.76rem;
+    }
+
+    .leyenda-color {
+        width: 0.7rem;
+        height: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .formulario-vacaciones {
+        padding: 14px;
+    }
+
+    .seccion-formulario h2 {
+        font-size: 1.02rem;
+    }
+
+    .calendario-mes-header span {
+        font-size: 0.88rem;
+    }
+
+    .calendario-mes-header small {
+        font-size: 0.74rem;
+    }
+
+    .dia-calendario {
+        min-height: 30px;
+        font-size: 0.72rem;
+    }
+
+    .texto-ayuda-calendario {
+        font-size: 0.78rem;
+    }
+}
+
