@@ -1,0 +1,7 @@
+# Redirigir acceso directo a la raíz hacia el login
+DirectoryIndex index.php
+
+# Bloquear acceso directo a carpetas sensibles
+<FilesMatch "\.(php|sql)$">
+    # Permitir sólo los archivos de vistas y controladores
+</FilesMatch>

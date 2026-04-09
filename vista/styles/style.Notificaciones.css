@@ -1,0 +1,187 @@
+:root {
+    --fondo-principal: #f3f6ee;
+    --verde-oscuro: #3e4e22;
+    --verde-acento: #8da561;
+    --verde-claro: #e9f0dc;
+    --gris-claro: #ebf0e4;
+    --gris-medio: #9da795;
+    --texto-principal: #24311f;
+    --texto-secundario: #5f6f57;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background: var(--fondo-principal);
+    color: var(--texto-principal);
+}
+
+.cabecera-notificaciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    padding: 26px 32px 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #dfe3d1;
+}
+
+.cabecera-notificaciones h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    color: var(--verde-oscuro);
+}
+
+.subtitulo {
+    margin: 0;
+    color: var(--texto-secundario);
+}
+
+.acciones-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-regresar,
+.btn-marcar-todas,
+.btn-marcar-leida {
+    border: 0;
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: #ffffff;
+    background: var(--verde-oscuro);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-regresar:hover,
+.btn-marcar-todas:hover,
+.btn-marcar-leida:hover {
+    background: var(--verde-acento);
+}
+
+.contenedor-notificaciones {
+    width: min(1180px, 94%);
+    margin: 28px auto 40px;
+    display: grid;
+    gap: 22px;
+}
+
+.panel-resumen {
+    background: #ffffff;
+    border: 1px solid #dfe3d1;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+    gap: 18px;
+    padding: 22px;
+}
+
+.resumen-item {
+    background: var(--verde-claro);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.resumen-item span {
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.resumen-item strong {
+    color: var(--verde-oscuro);
+    font-size: 28px;
+}
+
+.tabla-notificaciones {
+    background: #ffffff;
+    border: 1px solid #dfe3d1;
+    border-radius: 20px;
+    padding: 22px;
+}
+
+.encabezado-tabla h2 {
+    margin: 0 0 14px;
+    color: var(--verde-oscuro);
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+th,
+td {
+    padding: 16px 14px;
+    border-bottom: 1px solid #e1e6d7;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background: var(--gris-claro);
+    color: var(--texto-secundario);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+}
+
+tbody tr {
+    background: #ffffff;
+}
+
+.fila-no-leida {
+    background: #f7f9ef;
+}
+
+.estado-leido {
+    color: var(--texto-secundario);
+}
+
+.sin-resultados {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--texto-secundario);
+}
+
+.btn-marcar-leida {
+    background: var(--verde-oscuro);
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+}
+
+@media (max-width: 860px) {
+    .cabecera-notificaciones,
+    .panel-resumen,
+    .tabla-notificaciones {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .panel-resumen {
+        grid-template-columns: 1fr;
+    }
+
+    table {
+        min-width: 0;
+    }
+}

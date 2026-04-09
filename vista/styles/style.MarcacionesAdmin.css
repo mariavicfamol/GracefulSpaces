@@ -1,0 +1,133 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7f1;
+    color: #253018;
+}
+
+.navegacion-superior {
+    background: #4f6a2b;
+    padding: 14px 24px;
+}
+
+.btn-volver {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.contenedor-principal {
+    width: min(1200px, 94%);
+    margin: 24px auto 40px;
+    display: grid;
+    gap: 16px;
+}
+
+header h1 {
+    margin: 0 0 8px;
+}
+
+header p {
+    margin: 0;
+    color: #5a6b45;
+}
+
+.tarjeta-filtros,
+.tarjeta-tabla {
+    background: #ffffff;
+    border: 1px solid #d8decf;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(40, 62, 18, 0.06);
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 12px;
+    align-items: end;
+}
+
+.grupo-campo {
+    display: grid;
+    gap: 6px;
+}
+
+.grupo-campo label {
+    font-size: 13px;
+    color: #4f5f39;
+}
+
+.grupo-campo select,
+.grupo-campo input {
+    border: 1px solid #ccd5bf;
+    border-radius: 8px;
+    padding: 10px;
+    font: inherit;
+}
+
+.acciones-filtro {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-aplicar,
+.btn-limpiar {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-decoration: none;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-aplicar {
+    background: #2f7a3d;
+    color: #fff;
+}
+
+.btn-limpiar {
+    background: #e8ece2;
+    color: #2e3f1b;
+}
+
+.tabla-contenedor {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e7db;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    background: #f1f5ea;
+    color: #3f4d2a;
+}
+
+@media (max-width: 980px) {
+    .filtros-grid {
+        grid-template-columns: 1fr 1fr;
+        column-gap: 18px;
+    }
+}
+
+@media (max-width: 620px) {
+    .filtros-grid {
+        grid-template-columns: 1fr;
+    }
+}

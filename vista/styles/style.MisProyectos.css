@@ -1,0 +1,143 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7f1;
+    color: #253018;
+}
+
+.navegacion-superior {
+    background: #4f6a2b;
+    padding: 14px 24px;
+}
+
+.btn-volver {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.contenedor-principal {
+    width: min(1100px, 94%);
+    margin: 24px auto 40px;
+    display: grid;
+    gap: 16px;
+}
+
+header h1 {
+    margin: 0 0 8px;
+}
+
+header p {
+    margin: 0;
+    color: #5a6b45;
+}
+
+.mensaje {
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.mensaje-error {
+    background: #ffe7e7;
+    color: #8f1f1f;
+    border: 1px solid #f3c3c3;
+}
+
+.mensaje-exito {
+    background: #e8f7e8;
+    color: #1d6a2d;
+    border: 1px solid #c1e8c8;
+}
+
+.tarjeta-proyectos {
+    display: grid;
+    gap: 14px;
+}
+
+.proyecto-item {
+    background: #fff;
+    border: 1px solid #d8decf;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(40, 62, 18, 0.06);
+}
+
+.cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.cabecera h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.badge {
+    background: #ecf1e5;
+    border: 1px solid #d0d9c2;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.detalle {
+    margin-top: 8px;
+    color: #4a5b37;
+}
+
+.form-estado {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-principal,
+.btn-secundario {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-principal {
+    background: #2f7a3d;
+    color: #fff;
+}
+
+.btn-secundario {
+    background: #e8ece2;
+    color: #2e3f1b;
+}
+
+.estado {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.estado-ok {
+    color: #1f6e32;
+}
+
+.estado-pendiente {
+    color: #8a5b10;
+}
+
+.sin-proyectos {
+    background: #fff;
+    border: 1px solid #d8decf;
+    border-radius: 14px;
+    padding: 18px;
+}
