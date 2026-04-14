@@ -2,6 +2,7 @@
 
 if (!function_exists('pdf_pf_escapar')) {
     function pdf_pf_escapar(string $texto): string {
+        // Prepara el texto para que se pueda escribir dentro de un PDF sin romper el formato.
         $texto = (string)$texto;
         $texto = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $texto);
         $convertido = @iconv('UTF-8', 'Windows-1252//TRANSLIT', $texto);
@@ -20,6 +21,7 @@ if (!function_exists('pdf_pf_escapar')) {
 
 if (!function_exists('pdf_pf_limitar')) {
     function pdf_pf_limitar(string $texto, int $limite): string {
+        // Reduce el texto para que no se salga de la columna en el reporte.
         $texto = trim(preg_replace('/\s+/', ' ', $texto));
 
         if ($limite <= 0) {
@@ -44,18 +46,21 @@ if (!function_exists('pdf_pf_limitar')) {
 
 if (!function_exists('pdf_pf_linea')) {
     function pdf_pf_linea(int $x, int $y, string $texto, int $tamano = 8, string $fuente = 'F1'): string {
+        // Dibuja una línea de texto en una posición específica de la página.
         return "BT\n/{$fuente} {$tamano} Tf\n1 0 0 1 {$x} {$y} Tm\n(" . pdf_pf_escapar($texto) . ") Tj\nET\n";
     }
 }
 
 if (!function_exists('pdf_pf_rect')) {
     function pdf_pf_rect(int $x, int $y, int $ancho, int $alto, string $modo = 'f'): string {
+        // Dibuja un rectángulo para fondos, tarjetas o encabezados.
         return sprintf('%d %d %d %d re %s\n', $x, $y, $ancho, $alto, $modo);
     }
 }
 
 if (!function_exists('generarPdfProductosFaltantes')) {
     function generarPdfProductosFaltantes(array $productos): string {
+        // Construye el PDF completo del reporte de productos faltantes.
         $anchoPagina = 842;
         $altoPagina = 595;
         $margenIzquierdo = 28;
@@ -69,6 +74,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
         $altoBarra = 34;
         $altoTarjeta = 34;
 
+        // Calcula totales para mostrar un resumen rápido en la parte superior.
         $total = count($productos);
         $pendientes = 0;
         $comprados = 0;
@@ -81,6 +87,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
             }
         }
 
+        // Define las columnas que tendrá la tabla del reporte.
         $columnas = [
             ['titulo' => 'Producto', 'ancho' => 110, 'campo' => 'nombre'],
             ['titulo' => 'Descripcion', 'ancho' => 180, 'campo' => 'descripcion'],
@@ -104,6 +111,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
         $contenidoPagina = '';
         $numeroPagina = 1;
 
+        // Esta función dibuja el encabezado de cada página.
         $dibujarEncabezado = function () use (
             &$contenidoPagina,
             $anchoPagina,
@@ -132,6 +140,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
 
             $y -= 52;
 
+            // Resumen visual con totales del reporte.
             $tarjetas = [
                 ['label' => 'Total', 'valor' => (string)$total, 'fondo' => '0.96 0.97 0.93 rg', 'texto' => '0.21 0.28 0.12 rg'],
                 ['label' => 'Pendientes', 'valor' => (string)$pendientes, 'fondo' => '0.99 0.95 0.84 rg', 'texto' => '0.53 0.35 0.04 rg'],
@@ -175,8 +184,10 @@ if (!function_exists('generarPdfProductosFaltantes')) {
         $y = $dibujarEncabezado();
         $filaAlterna = false;
 
+        // Recorre los productos y agrega una fila por cada uno.
         foreach ($productos as $producto) {
             if ($y < $margenInferior + $altoFila) {
+            // Si ya no hay espacio, guarda la página actual y comienza otra.
                 $paginas[] = $contenidoPagina;
                 $contenidoPagina = '';
                 $numeroPagina++;
@@ -184,6 +195,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
                 $y = $dibujarEncabezado();
             }
 
+            // Limita y formatea cada valor antes de pintarlo en la tabla.
             $valores = [
                 pdf_pf_limitar((string)($producto['nombre'] ?? ''), 22),
                 pdf_pf_limitar((string)($producto['descripcion'] ?? '--'), 34),
@@ -231,6 +243,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
 
         $paginas[] = $contenidoPagina;
 
+        // Arma la estructura interna del archivo PDF.
         $objetos = [];
         $objetos[1] = '<< /Type /Catalog /Pages 2 0 R >>';
         $objetos[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
@@ -266,6 +279,7 @@ if (!function_exists('generarPdfProductosFaltantes')) {
             $numeroObjeto++;
         }
 
+        // Crea el índice final para que el lector PDF pueda ubicar cada objeto.
         $inicioXref = strlen($pdf);
         $pdf .= "xref\n0 " . $numeroObjeto . "\n";
         $pdf .= "0000000000 65535 f \n";

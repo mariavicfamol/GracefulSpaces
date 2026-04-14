@@ -1,9 +1,11 @@
 <?php
 
+// Importa la conexión y configuración general de la base de datos.
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
 class ModeloPlanilla {
 
+    // Genera o actualiza planillas del mes para todos los trabajadores activos.
     public static function generarPlanillasMensuales(int $anio, int $mes, float $tarifaHora, array $bonosPorEmpleado, int $idGenerador): array {
         if ($anio < 2000 || $anio > 2100) {
             return ['error' => true, 'mensaje' => 'El año indicado no es válido.'];
@@ -24,6 +26,7 @@ class ModeloPlanilla {
         $generadas = 0;
 
         foreach ($trabajadores as $trabajador) {
+            // Obtiene marcaciones del trabajador y calcula horas totales del mes.
             $idTrabajador = (int)$trabajador['id'];
             $marcaciones = self::obtenerMarcacionesDelMesInterno($conexion, $idTrabajador, $anio, $mes);
 
@@ -42,6 +45,7 @@ class ModeloPlanilla {
             
             $montoTotal = round($montoTotal, 2);
 
+            // Inserta planilla nueva o actualiza la existente del mismo período.
             $sqlPlanilla = "INSERT INTO planillas_mensuales
                             (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
                             VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
@@ -79,6 +83,7 @@ class ModeloPlanilla {
                 continue;
             }
 
+            // Limpia detalles anteriores para regenerar el detalle del mes actual.
             $stmtDelete = $conexion->prepare('DELETE FROM planilla_detalles WHERE id_planilla = ?');
             $stmtDelete->bind_param('i', $idPlanilla);
             $stmtDelete->execute();
@@ -115,6 +120,7 @@ class ModeloPlanilla {
         ];
     }
 
+    // Devuelve lista de trabajadores activos para uso en filtros y generación.
     public static function obtenerTrabajadoresActivos(): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -125,6 +131,7 @@ class ModeloPlanilla {
         return $trabajadores;
     }
 
+    // Lista planillas para administración con filtros opcionales.
     public static function obtenerPlanillasAdmin(?int $anio = null, ?int $mes = null, ?int $idTrabajador = null, bool $soloAprobadas = false): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -179,6 +186,7 @@ class ModeloPlanilla {
         return $filas;
     }
 
+    // Lista planillas de un trabajador específico.
     public static function obtenerPlanillasPorTrabajador(int $idTrabajador, bool $soloAprobadas = false): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -219,6 +227,7 @@ class ModeloPlanilla {
         return $filas;
     }
 
+    // Obtiene una planilla con su cabecera y detalle diario.
     public static function obtenerPlanillaConDetalles(int $idPlanilla): ?array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -275,6 +284,7 @@ class ModeloPlanilla {
         return $cabecera;
     }
 
+    // Marca una planilla como aprobada por un administrador.
     public static function aprobarPlanilla(int $idPlanilla, int $idAdmin): array {
         if ($idPlanilla <= 0 || $idAdmin <= 0) {
             return ['error' => true, 'mensaje' => 'Datos inválidos para aprobar la planilla.'];
@@ -316,6 +326,7 @@ class ModeloPlanilla {
         }
     }
 
+    // Consulta interna de trabajadores activos.
     private static function obtenerTrabajadoresActivosInterno(mysqli $conexion): array {
         $sql = "SELECT id, id_empresa, nombre, apellido1, COALESCE(apellido2, '') AS apellido2
                 FROM trabajadores
@@ -332,6 +343,7 @@ class ModeloPlanilla {
         return $filas;
     }
 
+    // Consulta interna de marcaciones por trabajador y mes.
     private static function obtenerMarcacionesDelMesInterno(mysqli $conexion, int $idTrabajador, int $anio, int $mes): array {
         $sql = "SELECT fecha_marcacion, hora_entrada, hora_salida
                 FROM marcaciones
@@ -354,6 +366,7 @@ class ModeloPlanilla {
         return $filas;
     }
 
+    // Calcula horas trabajadas entre hora de entrada y salida.
     private static function calcularHorasLaboradas(?string $entrada, ?string $salida): float {
         if (!$entrada || !$salida) {
             return 0.0;
@@ -374,6 +387,7 @@ class ModeloPlanilla {
         }
     }
 
+    // Calcula monto aplicando horas extra al 150% después de 9 horas.
     private static function calcularMontoConExtras(float $horasTotales, float $tarifaHora): float {
         if ($horasTotales <= 9) {
             return round($horasTotales * $tarifaHora, 2);
@@ -383,6 +397,7 @@ class ModeloPlanilla {
         return round($horasBase + $horasExtras, 2);
     }
 
+    // Asegura que existan las tablas necesarias del módulo de planillas.
     private static function asegurarTablas(mysqli $conexion): void {
         $sqlMarcaciones = "CREATE TABLE IF NOT EXISTS marcaciones (
                                id INT AUTO_INCREMENT PRIMARY KEY,
@@ -436,12 +451,14 @@ class ModeloPlanilla {
         $conexion->query($sqlPlanillas);
         $conexion->query($sqlDetalles);
 
+        // Compatibilidad: agrega columnas e índices si faltan en bases existentes.
         self::asegurarColumnaPlanillas($conexion, 'aprobada', 'TINYINT(1) NOT NULL DEFAULT 0');
         self::asegurarColumnaPlanillas($conexion, 'aprobado_por', 'INT NULL');
         self::asegurarColumnaPlanillas($conexion, 'fecha_aprobacion', 'DATETIME NULL');
         self::asegurarIndicePlanillas($conexion, 'idx_aprobada', '(aprobada)');
     }
 
+    // Crea una columna en planillas_mensuales solo si aún no existe.
     private static function asegurarColumnaPlanillas(mysqli $conexion, string $columna, string $definicion): void {
         $sql = "SELECT 1
                 FROM INFORMATION_SCHEMA.COLUMNS
@@ -465,6 +482,7 @@ class ModeloPlanilla {
         }
     }
 
+    // Crea un índice en planillas_mensuales solo si aún no existe.
     private static function asegurarIndicePlanillas(mysqli $conexion, string $indice, string $columnas): void {
         $sql = "SELECT 1
                 FROM INFORMATION_SCHEMA.STATISTICS

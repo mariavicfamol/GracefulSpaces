@@ -1,9 +1,11 @@
 <?php
 
+// Importa la conexión y configuración general de base de datos.
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
 class ModeloProductoFaltante {
 
+    // Crea un nuevo reporte de producto faltante.
     public static function crearProducto(array $datos, int $idTrabajador): array {
         if (empty($datos['nombre'])) {
             return ['error' => true, 'mensaje' => 'El nombre del producto es obligatorio.'];
@@ -41,6 +43,7 @@ class ModeloProductoFaltante {
         }
     }
 
+    // Obtiene productos faltantes con filtros opcionales por estado y trabajador.
     public static function obtenerProductos(?string $estado = null, ?int $idTrabajador = null): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -55,6 +58,7 @@ class ModeloProductoFaltante {
             $condiciones[] = 'p.id_trabajador = ' . (int)$idTrabajador;
         }
 
+        // Construye el WHERE dinámico según filtros recibidos.
         $where = implode(' AND ', $condiciones);
 
         $sql = "SELECT p.id,
@@ -85,6 +89,7 @@ class ModeloProductoFaltante {
         return $productos;
     }
 
+    // Marca un producto como comprado y guarda quién lo compró.
     public static function marcarComprrado(int $idProducto, int $idAdmin): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -117,6 +122,7 @@ class ModeloProductoFaltante {
         }
     }
 
+    // Elimina un producto faltante por su ID.
     public static function eliminarProducto(int $idProducto): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -145,6 +151,7 @@ class ModeloProductoFaltante {
         }
     }
 
+    // Crea la tabla de productos faltantes si todavía no existe.
     private static function asegurarTabla(mysqli $conexion): void {
         $sql = "CREATE TABLE IF NOT EXISTS `productos_faltantes` (
                     `id`                    INT AUTO_INCREMENT PRIMARY KEY,

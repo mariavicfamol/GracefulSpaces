@@ -1,5 +1,6 @@
 <?php
 
+// Importa la conexión a BD y el modelo de notificaciones.
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 require_once __DIR__ . '/ModeloNotificacion.php';
 
@@ -24,6 +25,7 @@ class ModeloSolicitudVacaciones {
             return ['error' => true, 'mensaje' => 'La fecha de fin no puede ser anterior a la fecha de inicio.'];
         }
 
+        // Calcula días solicitados a partir del rango de fechas.
         $diasSolicitados = $fechaFin->diff($fechaInicio)->days + 1;
 
         if ($diasSolicitados <= 0 || $diasSolicitados > 30) {
@@ -40,7 +42,7 @@ class ModeloSolicitudVacaciones {
         $motivo = trim($datos['motivo'] ?? '');
 
         try {
-            // Verificar que no haya conflictos con otras solicitudes aprobadas
+            // Verifica que no se traslape con vacaciones ya aprobadas.
             $sqlVerificar = "SELECT COUNT(*) as total FROM solicitudes_vacaciones
                             WHERE id_trabajador = ?
                             AND estado = 'Aprobada'
@@ -73,17 +75,19 @@ class ModeloSolicitudVacaciones {
                 return ['error' => true, 'mensaje' => 'Ya tiene otras vacaciones aprobadas en este periodo.'];
             }
 
-            // Insertar la solicitud
+                // Inserta la solicitud en estado Pendiente.
             $sql = "INSERT INTO solicitudes_vacaciones 
                     (id_trabajador, fecha_inicio, fecha_fin, dias_solicitados, motivo, estado)
                     VALUES (?, ?, ?, ?, ?, 'Pendiente')";
 
             $stmt = $conexion->prepare($sql);
+    // Lista solicitudes de un trabajador, con filtro opcional por estado.
             if (!$stmt) {
                 return ['error' => true, 'mensaje' => 'Error al preparar la consulta.'];
             }
 
             $stmt->bind_param(
+    // Lista solicitudes pendientes para revisión administrativa.
                 'issii',
                 $idTrabajador,
                 $datos['fecha_inicio'],
@@ -93,6 +97,7 @@ class ModeloSolicitudVacaciones {
             );
 
             $ok = $stmt->execute();
+    // Lista todas las solicitudes para admin con filtros opcionales.
             $idSolicitud = $stmt->insert_id;
             $stmt->close();
 
@@ -234,6 +239,7 @@ class ModeloSolicitudVacaciones {
         return $solicitudes;
     }
 
+    // Obtiene una solicitud básica por su ID.
     public static function obtenerSolicitudPorId(int $idSolicitud): ?array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -267,6 +273,7 @@ class ModeloSolicitudVacaciones {
         try {
             $comentario = trim($comentario ?? '');
 
+            // Cambia el estado a Aprobada y registra quién la procesó.
             $sql = "UPDATE solicitudes_vacaciones 
                     SET estado = 'Aprobada',
                         comentario_admin = ?,
@@ -309,6 +316,7 @@ class ModeloSolicitudVacaciones {
         try {
             $motivo = trim($motivo);
 
+            // Cambia el estado a Rechazada y guarda el motivo.
             $sql = "UPDATE solicitudes_vacaciones 
                     SET estado = 'Rechazada',
                         comentario_admin = ?,
@@ -393,6 +401,7 @@ class ModeloSolicitudVacaciones {
      * Asegurar que la tabla existe
      */
     private static function asegurarTabla(mysqli $conexion): void {
+        // Crea la tabla de solicitudes de vacaciones si aún no existe.
         $sql = "CREATE TABLE IF NOT EXISTS `solicitudes_vacaciones` (
                     `id`                    INT AUTO_INCREMENT PRIMARY KEY,
                     `id_trabajador`         INT NOT NULL,

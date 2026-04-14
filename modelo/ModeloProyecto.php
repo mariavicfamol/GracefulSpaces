@@ -1,10 +1,12 @@
 <?php
 
+// Importa conexión y utilidades necesarias para notificaciones.
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 require_once __DIR__ . '/ModeloNotificacion.php';
 
 class ModeloProyecto {
 
+    // Crea un proyecto y asigna colaboradores disponibles.
     public static function crearProyecto(array $datos, array $idsColaboradores, int $idAdmin): array {
         if (empty($datos['nombre'])) {
             return ['error' => true, 'mensaje' => 'El nombre del proyecto es obligatorio.'];
@@ -31,6 +33,7 @@ class ModeloProyecto {
 
         $especificaciones = trim($datos['especificaciones'] ?? '');
 
+        // Verifica disponibilidad real para evitar choques de horario.
         $disponibles = self::obtenerColaboradoresDisponiblesInterno($conexion, $datos['fecha_proyecto'], $datos['hora_proyecto']);
         $mapaDisponibles = [];
         foreach ($disponibles as $disponible) {
@@ -87,6 +90,7 @@ class ModeloProyecto {
             return ['error' => true, 'mensaje' => 'No se pudo crear el proyecto.'];
         }
 
+        // Asigna colaboradores al proyecto recién creado.
         $sqlAsignacion = "INSERT IGNORE INTO proyecto_colaboradores (id_proyecto, id_trabajador, terminado)
                           VALUES (?, ?, 0)";
         $stmtAsignacion = $conexion->prepare($sqlAsignacion);
@@ -126,6 +130,7 @@ class ModeloProyecto {
         ];
     }
 
+    // Devuelve colaboradores disponibles para una fecha y hora.
     public static function obtenerColaboradoresDisponibles(string $fechaProyecto = '', string $horaProyecto = ''): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -136,11 +141,13 @@ class ModeloProyecto {
         return $filas;
     }
 
+    // Consulta interna de disponibilidad, con o sin filtro de horario.
     private static function obtenerColaboradoresDisponiblesInterno(mysqli $conexion, string $fechaProyecto = '', string $horaProyecto = ''): array {
         $fechaProyecto = trim($fechaProyecto);
         $horaProyecto = self::normalizarHora($horaProyecto);
 
         if ($fechaProyecto !== '' && $horaProyecto !== '') {
+            // Excluye colaboradores con proyectos activos en el mismo día y hora.
             $sql = "SELECT t.id, t.id_empresa, t.nombre, t.apellido1, COALESCE(t.apellido2, '') AS apellido2, t.rol, t.estado
                     FROM trabajadores t
                     WHERE t.rol IN ('Trabajador', 'Supervisor')
@@ -189,6 +196,7 @@ class ModeloProyecto {
         return $filas;
     }
 
+    // Lista proyectos para vista administrativa junto con resumen de colaboradores.
     public static function obtenerProyectosAdmin(): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -222,6 +230,7 @@ class ModeloProyecto {
         return $proyectos;
     }
 
+    // Lista proyectos asignados a un colaborador específico.
     public static function obtenerProyectosPorColaborador(int $idColaborador): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -259,6 +268,7 @@ class ModeloProyecto {
         return $filas;
     }
 
+    // Actualiza estado terminado de un colaborador y recalcula estado general del proyecto.
     public static function actualizarTerminadoColaborador(int $idProyecto, int $idColaborador, bool $terminado): array {
         $conexion = obtenerConexion();
         self::asegurarTablas($conexion);
@@ -291,9 +301,11 @@ class ModeloProyecto {
         $ok = $stmtUpdate->execute();
         $stmtUpdate->close();
 
+        // Recalcula estado global después de actualizar el avance individual.
         self::recalcularEstadoGeneralProyecto($conexion, $idProyecto);
         $estadoDespues = self::obtenerEstadoGeneralProyectoInterno($conexion, $idProyecto);
 
+        // Si con este cambio se completó el proyecto, notifica a administradores.
         if ($terminado && $estadoAntes !== 'Finalizado' && $estadoDespues === 'Finalizado') {
             $nombreProyecto = self::obtenerNombreProyectoPorIdInterno($conexion, $idProyecto);
             ModeloNotificacion::enviarAAdmins(
@@ -311,6 +323,7 @@ class ModeloProyecto {
         return ['error' => false, 'mensaje' => 'Estado de finalización actualizado.'];
     }
 
+    // Obtiene colaboradores de un proyecto para mostrar detalle.
     private static function obtenerColaboradoresPorProyectoInterno(mysqli $conexion, int $idProyecto): array {
         $sql = "SELECT t.id,
                        t.id_empresa,
@@ -336,6 +349,7 @@ class ModeloProyecto {
         return $filas;
     }
 
+    // Define estado general: Finalizado si todos terminaron, en caso contrario En progreso.
     private static function recalcularEstadoGeneralProyecto(mysqli $conexion, int $idProyecto): void {
         $sql = "SELECT COUNT(*) AS total,
                        SUM(CASE WHEN terminado = 1 THEN 1 ELSE 0 END) AS finalizados
@@ -362,6 +376,7 @@ class ModeloProyecto {
         $stmtEstado->close();
     }
 
+    // Consulta estado general actual de un proyecto.
     private static function obtenerEstadoGeneralProyectoInterno(mysqli $conexion, int $idProyecto): string {
         $sql = 'SELECT estado_general FROM proyectos WHERE id = ? LIMIT 1';
         $stmt = $conexion->prepare($sql);
@@ -377,6 +392,7 @@ class ModeloProyecto {
         return (string)($resultado['estado_general'] ?? '');
     }
 
+    // Obtiene nombre del proyecto para mensajes y notificaciones.
     private static function obtenerNombreProyectoPorIdInterno(mysqli $conexion, int $idProyecto): string {
         $sql = 'SELECT nombre FROM proyectos WHERE id = ? LIMIT 1';
         $stmt = $conexion->prepare($sql);
@@ -392,6 +408,7 @@ class ModeloProyecto {
         return (string)($resultado['nombre'] ?? 'Proyecto');
     }
 
+    // Crea tablas y columnas requeridas del módulo de proyectos.
     private static function asegurarTablas(mysqli $conexion): void {
         $sqlProyectos = "CREATE TABLE IF NOT EXISTS proyectos (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -435,9 +452,11 @@ class ModeloProyecto {
             $conexion->query('ALTER TABLE proyectos ADD COLUMN hora_proyecto TIME NULL AFTER fecha_proyecto');
         }
 
+        // Crea índices que mejoran búsquedas por rol, fecha y asignaciones.
         self::crearIndicesOptimizacion($conexion);
     }
 
+    // Genera índices auxiliares si no existen.
     private static function crearIndicesOptimizacion(mysqli $conexion): void {
         if (!self::indiceExiste($conexion, 'trabajadores', 'idx_rol_estado')) {
             $conexion->query('ALTER TABLE trabajadores ADD INDEX idx_rol_estado (rol, estado)');
@@ -452,6 +471,7 @@ class ModeloProyecto {
         }
     }
 
+    // Verifica si un índice existe en una tabla.
     private static function indiceExiste(mysqli $conexion, string $tabla, string $indice): bool {
         $sql = "SELECT 1
                 FROM INFORMATION_SCHEMA.STATISTICS
@@ -473,6 +493,7 @@ class ModeloProyecto {
         return $existe;
     }
 
+    // Verifica si una columna existe en una tabla.
     private static function columnaExiste(mysqli $conexion, string $tabla, string $columna): bool {
                 $sql = "SELECT 1
                                 FROM INFORMATION_SCHEMA.COLUMNS
@@ -494,6 +515,7 @@ class ModeloProyecto {
         return $existe;
     }
 
+    // Normaliza la hora a formato HH:MM para comparaciones consistentes.
     private static function normalizarHora(string $hora): string {
         $hora = trim($hora);
         if (preg_match('/^\d{2}:\d{2}:\d{2}$/', $hora)) {

@@ -1,5 +1,6 @@
 <?php
 
+// Importa la conexión y configuración general de la base de datos.
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
 class ModeloUsuario {
@@ -11,6 +12,7 @@ class ModeloUsuario {
         $conexion = obtenerConexion();
         $stmt = null;
 
+        // Normaliza fechas para validar correctamente antes de guardar.
         $fechaNacimiento = self::normalizarFecha($datos['fecha_nacimiento'] ?? null);
         $fechaIngreso = self::normalizarFecha($datos['fecha_ingreso'] ?? null);
 
@@ -97,6 +99,7 @@ class ModeloUsuario {
     // -------------------------------------------------------
     public static function buscarUsuario(string $termino): ?array {
         $conexion = obtenerConexion();
+        // Permite buscar por coincidencia parcial de nombre.
         $like = '%' . $termino . '%';
 
         $sql = "SELECT * FROM trabajadores
@@ -160,7 +163,7 @@ class ModeloUsuario {
             $rutaFoto = $rutaNuevaFoto;
         }
 
-        // Si viene nueva contraseña
+        // Si viene nueva contraseña, genera un nuevo hash seguro.
         $sqlPassword = '';
         if (!empty($datos['password'])) {
             $hash = password_hash($datos['password'], PASSWORD_BCRYPT, ['cost' => 12]);
@@ -233,6 +236,7 @@ class ModeloUsuario {
     // DAR DE BAJA (desactivar) usuario
     // -------------------------------------------------------
     public static function darDeBaja(int $id): array {
+        // Baja lógica: no elimina el registro, solo lo desactiva.
         $conexion = obtenerConexion();
         $stmt = $conexion->prepare("UPDATE trabajadores SET estado = 'Inactivo' WHERE id = ?");
         $stmt->bind_param('i', $id);
@@ -248,6 +252,7 @@ class ModeloUsuario {
     // LOGIN
     // -------------------------------------------------------
     public static function autenticar(string $login, string $password): ?array {
+        // Solo autentica cuentas activas.
         $conexion = obtenerConexion();
         $stmt = $conexion->prepare(
             "SELECT * FROM trabajadores WHERE login_usuario = ? AND estado = 'Activo' LIMIT 1"
@@ -258,6 +263,7 @@ class ModeloUsuario {
         $stmt->close();
         $conexion->close();
 
+        // Compara contraseña ingresada con hash almacenado.
         if ($usuario && password_verify($password, $usuario['password_hash'])) {
             unset($usuario['password_hash']); // nunca exponer el hash
             return $usuario;
@@ -306,6 +312,7 @@ class ModeloUsuario {
                 return ['error' => true, 'mensaje' => 'No se pudo verificar la informacion proporcionada.'];
             }
 
+            // Guarda nueva contraseña con hash.
             $hash = password_hash($nuevaContrasena, PASSWORD_BCRYPT, ['cost' => 12]);
             $stmt = $conexion->prepare("UPDATE trabajadores SET password_hash = ? WHERE id = ? LIMIT 1");
             if (!$stmt) {
@@ -330,6 +337,7 @@ class ModeloUsuario {
     // Helpers privados
     // -------------------------------------------------------
     private static function generarIdEmpresa(mysqli $con): string {
+        // Genera un ID empresarial con formato GS-YYYY-NNN.
         $anio = date('Y');
         $res = $con->query("SELECT COUNT(*) AS total FROM trabajadores");
         $total = (int)$res->fetch_assoc()['total'];
@@ -337,6 +345,7 @@ class ModeloUsuario {
     }
 
     private static function guardarFoto(string $tmpPath, string $nombreOriginal): ?string {
+        // Valida extensión y mueve la foto al directorio de subidas.
         $ext = strtolower(pathinfo($nombreOriginal, PATHINFO_EXTENSION));
         $permitidos = ['jpg', 'jpeg', 'png', 'webp'];
         if (!in_array($ext, $permitidos)) return null;
@@ -363,6 +372,7 @@ class ModeloUsuario {
     }
 
     private static function normalizarFecha(?string $fecha): ?string {
+        // Convierte cadenas vacías a null para evitar fechas inválidas.
         if ($fecha === null) {
             return null;
         }
@@ -372,6 +382,7 @@ class ModeloUsuario {
     }
 
     private static function esFechaValida(?string $fecha): bool {
+        // Valida formato YYYY-MM-DD de forma estricta.
         if ($fecha === null) {
             return true;
         }
