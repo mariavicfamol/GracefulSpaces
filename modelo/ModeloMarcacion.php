@@ -1,14 +1,17 @@
 <?php
-
+//Importa la configuración de la BD para obtener conexion y zona horaria
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
+//Gestina las entradas y salidas de los trabajadores
 class ModeloMarcacion {
 
+//consultas
+//Busca la marcación de hoy para un trabajador en especifico
     public static function obtenerMarcacionHoy(int $idTrabajador): ?array {
         $conexion = obtenerConexion();
-        self::asegurarTabla($conexion);
+        self::asegurarTabla($conexion); //crea la tabla si no existe
 
-        $hoy = self::fechaHoyVancouver();
+        $hoy = self::fechaHoyVancouver(); //zona horaria Vancouver
         $sql = "SELECT * FROM marcaciones WHERE id_trabajador = ? AND fecha_marcacion = ? LIMIT 1";
 
         $stmt = $conexion->prepare($sql);
@@ -22,11 +25,11 @@ class ModeloMarcacion {
 
         return $fila ?: null;
     }
-
+//Obtiene las ultimas marcaciones del trabajador 
     public static function obtenerUltimasMarcaciones(int $idTrabajador, int $limite = 10): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
-
+//Evita valores fuera del rango
         $limite = max(1, min($limite, 30));
         $sql = "SELECT fecha_marcacion, hora_entrada, hora_salida, estado
                 FROM marcaciones
@@ -49,11 +52,11 @@ class ModeloMarcacion {
 
         return $filas;
     }
-
+    //Lista los trabajadores con al menos una marcación registrada
     public static function obtenerTrabajadoresConMarcacion(): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
-
+        //DISTINTIC evita duplicados, CONCAT para mostrar nombre y orden 
         $sql = "SELECT DISTINCT t.id,
                                t.id_empresa,
                                CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador
@@ -71,7 +74,7 @@ class ModeloMarcacion {
         $conexion->close();
         return $filas;
     }
-
+    //Marcaciones filtradas para admin, con opciones de fecha y trabajador
     public static function obtenerMarcacionesParaAdmin(?int $idTrabajador = null, ?string $fechaInicio = null, ?string $fechaFin = null): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -82,6 +85,7 @@ class ModeloMarcacion {
             $condiciones[] = 'm.id_trabajador = ' . (int)$idTrabajador;
         }
 
+    //Solo si la fecha ingresada es válida
         if (self::esFechaValida($fechaInicio)) {
             $inicio = $conexion->real_escape_string($fechaInicio);
             $condiciones[] = "m.fecha_marcacion >= '$inicio'";
@@ -91,7 +95,7 @@ class ModeloMarcacion {
             $fin = $conexion->real_escape_string($fechaFin);
             $condiciones[] = "m.fecha_marcacion <= '$fin'";
         }
-
+        //Une todos los filtros con and y ordena por fecha y hora de entrada
         $where = implode(' AND ', $condiciones);
 
         $sql = "SELECT m.id,
@@ -117,7 +121,7 @@ class ModeloMarcacion {
         $conexion->close();
         return $filas;
     }
-
+//Registar entrada del trabajador
     public static function registrarEntrada(int $idTrabajador): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -127,12 +131,14 @@ class ModeloMarcacion {
 
         $marcacion = self::obtenerMarcacionInterna($conexion, $idTrabajador, $hoy);
 
+        //Si ya hay maracación registrada hoy, no se permite duplicar
         if ($marcacion && !empty($marcacion['hora_entrada'])) {
             $conexion->close();
             return ['error' => true, 'mensaje' => 'La entrada de hoy ya fue registrada.'];
         }
 
         if ($marcacion) {
+            //El update solo se ejecuta si hay una marcación sin hora de entrada
             $sql = "UPDATE marcaciones SET hora_entrada = ?, estado = 'Abierta' WHERE id = ?";
             $stmt = $conexion->prepare($sql);
             $id = (int)$marcacion['id'];
@@ -140,6 +146,7 @@ class ModeloMarcacion {
             $ok = $stmt->execute();
             $stmt->close();
         } else {
+            //Si no hay marcación para hoy, se crea una nueva
             $sql = "INSERT INTO marcaciones (id_trabajador, fecha_marcacion, hora_entrada, estado)
                     VALUES (?, ?, ?, 'Abierta')";
             $stmt = $conexion->prepare($sql);
@@ -156,7 +163,7 @@ class ModeloMarcacion {
 
         return ['error' => false, 'mensaje' => 'Hora de entrada registrada correctamente.'];
     }
-
+    //Registra la hora de salida del trabajador, solo si ya registró entrada
     public static function registrarSalida(int $idTrabajador): array {
         $conexion = obtenerConexion();
         self::asegurarTabla($conexion);
@@ -190,7 +197,8 @@ class ModeloMarcacion {
 
         return ['error' => false, 'mensaje' => 'Hora de salida registrada correctamente.'];
     }
-
+//metodos privados
+//Busca una maracación sin abrir/cerrar la conexion
     private static function obtenerMarcacionInterna(mysqli $conexion, int $idTrabajador, string $fecha): ?array {
         $sql = "SELECT * FROM marcaciones WHERE id_trabajador = ? AND fecha_marcacion = ? LIMIT 1";
         $stmt = $conexion->prepare($sql);
@@ -202,7 +210,7 @@ class ModeloMarcacion {
 
         return $fila ?: null;
     }
-
+    //crea la tabla marcaciones si aún no existe
     private static function asegurarTabla(mysqli $conexion): void {
         $sql = "CREATE TABLE IF NOT EXISTS marcaciones (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -222,6 +230,7 @@ class ModeloMarcacion {
         $conexion->query($sql);
     }
 
+    //valida que la fecha tenga el formato correcto
     private static function esFechaValida(?string $fecha): bool {
         if (!$fecha) {
             return false;
@@ -232,9 +241,10 @@ class ModeloMarcacion {
         }
 
         [$anio, $mes, $dia] = array_map('intval', explode('-', $fecha));
-        return checkdate($mes, $dia, $anio);
+        return checkdate($mes, $dia, $anio);//valida que la fecha sea real
     }
 
+    //Retorna solo la fecha y la hora actual en Vancouver
     private static function fechaHoyVancouver(): string {
         return self::ahoraVancouver()->format('Y-m-d');
     }
@@ -242,7 +252,7 @@ class ModeloMarcacion {
     private static function fechaHoraActualVancouver(): string {
         return self::ahoraVancouver()->format('Y-m-d H:i:s');
     }
-
+    //crea un objeto DateTimeInmutable con la zona horaria de Vancouver
     private static function ahoraVancouver(): DateTimeImmutable {
         return new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE));
     }

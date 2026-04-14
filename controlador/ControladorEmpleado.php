@@ -1,49 +1,38 @@
 <?php
 
-/**
- * CAPA DE CONTROLADOR
- * Archivo: controlador/ControladorEmpleado.php
- * Descripcion: API REST para operaciones CRUD de empleados
- *
- * GET              -> Lista todos los empleados
- * POST accion=crear    -> Crea un nuevo empleado
- * POST accion=editar   -> Edita un empleado existente
- * POST accion=eliminar -> Elimina un empleado
- */
-
+//Importa el modelo que maneja los empleados en BD
 require_once __DIR__ . '/../modelo/ModeloEmpleado.php';
 
+//Respuestas en JSON
 header('Content-Type: application/json; charset=utf-8');
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $modeloEmpleado = new ModeloEmpleado();
 
 
-/* ============================================================
-   GET - Obtener lista de empleados
-============================================================ */
+
+  //GET - Obtener lista de empleados
 if ($metodo === 'GET') {
     $listaEmpleados = $modeloEmpleado->obtenerTodos();
     echo json_encode($listaEmpleados);
     exit;
 }
 
-
-/* ============================================================
-   POST - Crear, Editar o Eliminar un empleado
-============================================================ */
+  // POST - Crear, Editar o Eliminar un empleado
 if ($metodo === 'POST') {
 
     // Detectar si viene FormData (con posible archivo) o JSON
     $vieneFormData = isset($_POST['accion']);
 
     if ($vieneFormData) {
+        // Extrae los datos desde $_POST y procesa la foto si fue adjuntada
         $accion      = trim($_POST['accion']   ?? '');
         $idEmpleado  = (int) ($_POST['id']     ?? 0);
         $nombre      = trim($_POST['nombre']   ?? '');
         $funcion     = trim($_POST['funcion']  ?? '');
         $rutaFoto    = procesarSubidaFoto();
     } else {
+        // Decodifica el cuerpo JSON de la solicitud
         $datosJson   = json_decode(file_get_contents('php://input'), true) ?? [];
         $accion      = trim($datosJson['accion']  ?? '');
         $idEmpleado  = (int) ($datosJson['id']    ?? 0);
@@ -86,15 +75,9 @@ if ($metodo === 'POST') {
 http_response_code(405);
 echo json_encode(['status' => 'error', 'mensaje' => 'Metodo no permitido']);
 
+// FUNCION AUXILIAR - Subida de foto
+//Procesa y guarda la foto subida por el usuario
 
-/* ============================================================
-   FUNCION AUXILIAR - Subida de foto
-============================================================ */
-
-/**
- * Procesa y guarda la foto subida por el usuario
- * @return string Ruta relativa del archivo guardado, o cadena vacia si no hay foto
- */
 function procesarSubidaFoto(): string {
     if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
         return '';
@@ -102,16 +85,18 @@ function procesarSubidaFoto(): string {
 
     $carpetaSubidas = __DIR__ . '/../publico/subidas/';
 
+//Crea la carpeta de destino si no existe
     if (!is_dir($carpetaSubidas)) {
         mkdir($carpetaSubidas, 0755, true);
     }
-
+//Genera un nombre unico para la foto
     $nombreArchivo  = time() . '_' . basename($_FILES['foto']['name']);
     $rutaDestino    = $carpetaSubidas . $nombreArchivo;
 
+//Mueve el archivo temporal al destino final y retorna la ruta
     if (move_uploaded_file($_FILES['foto']['tmp_name'], $rutaDestino)) {
         return 'publico/subidas/' . $nombreArchivo;
     }
-
+//Si falla, retorna cadena vacía
     return '';
 }
