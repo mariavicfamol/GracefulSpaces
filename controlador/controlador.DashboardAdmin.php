@@ -1,8 +1,10 @@
 <?php
 
 session_start();
+//importa la configuracion de la BD
 require_once __DIR__ . '/../configuracion/GracefulSpacesDB.configuracion.php';
 
+//Valida la sesión y el rol para acceder al dashboard
 if (empty($_SESSION['usuario'])) {
     http_response_code(401);
     header('Content-Type: application/json; charset=utf-8');
@@ -18,6 +20,7 @@ if (!in_array($rol, ['Administrador Total', 'Administrador'], true)) {
     exit;
 }
 
+//Valida la acción solicitada (resumen dashboard)
 $accion = $_GET['accion'] ?? $_POST['accion'] ?? '';
 if ($accion !== 'resumen') {
     http_response_code(400);
@@ -26,9 +29,11 @@ if ($accion !== 'resumen') {
     exit;
 }
 
+//Conexion bd
 $conexion = obtenerConexion();
 header('Content-Type: application/json; charset=utf-8');
 
+//Fechas y variables para consultas
 $hoy = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('Y-m-d');
 $anioActual = (int)(new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('Y');
 $mesActual = (int)(new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('m');
@@ -76,7 +81,7 @@ try {
             $kpis[$clave] = (int)($resultado['total'] ?? 0);
         }
     }
-
+    //ultimas marcaciones
     $ultimasMarcaciones = [];
     $sqlMarcaciones = "SELECT CONCAT(t.nombre, ' ', t.apellido1, ' ', COALESCE(t.apellido2, '')) AS trabajador,
                               m.fecha_marcacion,
@@ -94,7 +99,8 @@ try {
             $ultimasMarcaciones[] = $fila;
         }
     }
-
+    
+    //Proyectos prox a vencer
     $proyectosProximos = [];
     $fechaHoy = new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE));
     $fecha7Dias = $fechaHoy->modify('+7 days')->format('Y-m-d');
@@ -132,7 +138,7 @@ try {
 
         $stmtProximos->close();
     }
-
+    //Respuesta final con KPIs, ultimas marcaciones y proyectos prox a vencer
     $respuesta = [
         'error' => false,
         'fecha' => $hoy,

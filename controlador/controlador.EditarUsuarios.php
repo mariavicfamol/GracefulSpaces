@@ -1,19 +1,21 @@
 <?php
 
 session_start();
+//importa el modelo de usuario de la BD
 require_once __DIR__ . '/../modelo/ModeloUsuario.php';
 
+//Responde en JSON
 function responderJson(int $statusCode, array $payload): void {
     http_response_code($statusCode);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($payload);
     exit;
 }
-
+//Verifica si la accion es permitida para AJAX
 function esAccionAjaxUsuarios(string $accion): bool {
     return in_array($accion, ['buscar', 'actualizar', 'darDeBaja'], true);
 }
-
+//Solo permite dos roles (trabajador, admin)
 function normalizarRolUsuario(string $rol): string {
     if ($rol === 'Trabajador') {
         return 'Trabajador';
@@ -21,7 +23,7 @@ function normalizarRolUsuario(string $rol): string {
 
     return 'Administrador';
 }
-
+//Normaliza el cargo
 function normalizarCargoUsuario(string $cargo): string {
     if ($cargo === 'Trabajador') {
         return 'Trabajador';
@@ -33,7 +35,7 @@ function normalizarCargoUsuario(string $cargo): string {
 $accion = $_POST['accion'] ?? $_GET['accion'] ?? '';
 $accionAjax = esAccionAjaxUsuarios($accion);
 
-// Proteger ruta
+// Valida la sesión y el rol del usuario
 if (empty($_SESSION['usuario'])) {
     if ($accionAjax) {
         responderJson(401, ['error' => true, 'mensaje' => 'Sesión expirada. Vuelve a iniciar sesión.']);
@@ -60,10 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $accion === '') {
         'mensaje' => 'La solicitud no pudo procesarse. Verifique el tamaño del archivo de imagen e intente nuevamente.'
     ]);
 }
-
-// -------------------------------------------------------
+//Metodos CRUD 
 // BUSCAR usuario (GET o POST con ?accion=buscar)
-// -------------------------------------------------------
 if ($accion === 'buscar') {
     header('Content-Type: application/json; charset=utf-8');
     $termino = trim($_GET['termino'] ?? $_POST['termino'] ?? '');
@@ -81,9 +81,7 @@ if ($accion === 'buscar') {
     exit;
 }
 
-// -------------------------------------------------------
 // ACTUALIZAR usuario (POST con accion=actualizar)
-// -------------------------------------------------------
 if ($accion === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = (int)($_POST['id'] ?? 0);
     if (!$id) {
@@ -137,9 +135,7 @@ if ($accion === 'actualizar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     responderJson(200, ModeloUsuario::actualizarUsuario($id, $datos));
 }
 
-// -------------------------------------------------------
 // DAR DE BAJA (POST con accion=darDeBaja)
-// -------------------------------------------------------
 if ($accion === 'darDeBaja' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = (int)($_POST['id'] ?? 0);
     if (!$id) {

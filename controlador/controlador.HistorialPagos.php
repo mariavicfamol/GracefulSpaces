@@ -1,8 +1,10 @@
 <?php
 
 session_start();
+//Importa el modelo de planillas DB
 require_once __DIR__ . '/../modelo/ModeloPlanilla.php';
 
+//Valida sesión y el rol
 if (empty($_SESSION['usuario'])) {
     header('Location: ../vista/vistas/Login.php');
     exit;
@@ -11,6 +13,7 @@ if (empty($_SESSION['usuario'])) {
 $usuario = $_SESSION['usuario'];
 $rol = $usuario['rol'] ?? '';
 
+//Solo permite el acceso a admin
 if (!in_array($rol, ['Administrador Total', 'Administrador'], true)) {
     header('Location: ../vista/vistas/HomeAdminTotal.php');
     exit;
@@ -18,9 +21,10 @@ if (!in_array($rol, ['Administrador Total', 'Administrador'], true)) {
 
 $accion = $_GET['accion'] ?? '';
 
+//Descarga la planilla en exel
 if ($accion === 'descargar') {
     $idPlanilla = (int)($_GET['id'] ?? 0);
-
+//obtiene y valida ID
     if ($idPlanilla <= 0) {
         http_response_code(400);
         echo 'Planilla no válida.';
@@ -28,7 +32,7 @@ if ($accion === 'descargar') {
     }
 
     $planilla = ModeloPlanilla::obtenerPlanillaConDetalles($idPlanilla);
-
+    //Valida que exista y esté aprobada
     if (!$planilla) {
         http_response_code(404);
         echo 'No se encontró la planilla solicitada.';
@@ -40,10 +44,10 @@ if ($accion === 'descargar') {
         echo 'La planilla no está aprobada para historial de pagos.';
         exit;
     }
-
+    //Nombre del archivo
     $mes = str_pad((string)$planilla['mes'], 2, '0', STR_PAD_LEFT);
     $archivo = 'Planilla_' . preg_replace('/[^A-Za-z0-9\-_]/', '_', $planilla['id_empresa']) . '_' . $planilla['anio'] . '_' . $mes . '.xls';
-
+    //descarga como exel y encabezado del doc
     header('Content-Type: application/vnd.ms-excel; charset=utf-8');
     header('Content-Disposition: attachment; filename=' . $archivo);
 
@@ -56,7 +60,7 @@ if ($accion === 'descargar') {
     echo "Monto Total\t" . number_format((float)$planilla['monto_total'], 2, '.', '') . "\n\n";
 
     echo "Fecha\tEntrada\tSalida\tHoras Laboradas\n";
-
+    //Detalles de la planilla
     foreach ($planilla['detalles'] as $detalle) {
         $fecha = date('d/m/Y', strtotime($detalle['fecha_marcacion']));
         $entrada = !empty($detalle['hora_entrada']) ? date('H:i:s', strtotime($detalle['hora_entrada'])) : '--:--:--';
@@ -68,19 +72,20 @@ if ($accion === 'descargar') {
 
     exit;
 }
-
+//Descarga todo el historial en exel
 if ($accion === 'descargar_todo') {
     $anio = (int)($_GET['anio'] ?? 0);
     $mes = (int)($_GET['mes'] ?? 0);
     $idTrabajador = (int)($_GET['trabajador'] ?? 0);
 
+    //obtiene planillas filtradas
     $planillas = ModeloPlanilla::obtenerPlanillasAdmin(
         $anio > 0 ? $anio : null,
         $mes > 0 ? $mes : null,
         $idTrabajador > 0 ? $idTrabajador : null,
         true
     );
-
+    //Nombre del archivo
     $filtro = '';
     if ($anio > 0 && $mes > 0) {
         $filtro = '_' . $anio . '_' . str_pad((string)$mes, 2, '0', STR_PAD_LEFT);
@@ -102,7 +107,7 @@ if ($accion === 'descargar_todo') {
     }
 
     $archivo = 'Historial_Pagos' . $filtro . '.xls';
-
+    //Forzar descarga y encabezado del doc
     header('Content-Type: application/vnd.ms-excel; charset=utf-8');
     header('Content-Disposition: attachment; filename=' . $archivo);
 
@@ -111,6 +116,8 @@ if ($accion === 'descargar_todo') {
     echo "Empleado\tID Empresa\tPeriodo\tHoras Totales\tTarifa/Hora\tBono\tMonto Total\tGenerada\n";
 
     $totalMontoExcel = 0.0;
+
+    //Recorre las planillas
     foreach ($planillas as $planilla) {
         $periodo = $planilla['anio'] . '-' . str_pad((string)$planilla['mes'], 2, '0', STR_PAD_LEFT);
         $horas = number_format((float)$planilla['horas_totales'], 2, '.', '');
@@ -127,7 +134,7 @@ if ($accion === 'descargar_todo') {
              $bono . "\t" .
              $monto . "\t" .
              $generada . "\n";
-
+//suma el total
         $totalMontoExcel += (float)$planilla['monto_total'];
     }
 
@@ -135,6 +142,6 @@ if ($accion === 'descargar_todo') {
 
     exit;
 }
-
+    //Redirige si no hay acción
 header('Location: ../vista/vistas/HistorialPagosAdmin.php');
 exit;
