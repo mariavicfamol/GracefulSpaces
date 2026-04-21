@@ -37,21 +37,19 @@ class ModeloPlanilla {
 
             $horasTotales = round($horasTotales, 2);
             $montoTotal = self::calcularMontoConExtras($horasTotales, $tarifaHora);
-            
-            // Agregar bono si existe para este empleado
-            if (isset($bonosPorEmpleado[$idTrabajador])) {
-                $montoTotal += (float)$bonosPorEmpleado[$idTrabajador];
-            }
+            $bonoManual = isset($bonosPorEmpleado[$idTrabajador]) ? round((float)$bonosPorEmpleado[$idTrabajador], 2) : 0.0;
+            $montoTotal += $bonoManual;
             
             $montoTotal = round($montoTotal, 2);
 
             // Inserta planilla nueva o actualiza la existente del mismo período.
             $sqlPlanilla = "INSERT INTO planillas_mensuales
-                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
+                            (id_trabajador, anio, mes, tarifa_hora, horas_totales, bono_manual, monto_total, creado_por, aprobada, aprobado_por, fecha_aprobacion)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, NULL)
                             ON DUPLICATE KEY UPDATE
                                 tarifa_hora = VALUES(tarifa_hora),
                                 horas_totales = VALUES(horas_totales),
+                                bono_manual = VALUES(bono_manual),
                                 monto_total = VALUES(monto_total),
                                 creado_por = VALUES(creado_por),
                                 aprobada = 0,
@@ -60,7 +58,7 @@ class ModeloPlanilla {
                                 fecha_generacion = CURRENT_TIMESTAMP";
 
             $stmtPlanilla = $conexion->prepare($sqlPlanilla);
-            $stmtPlanilla->bind_param('iiidddi', $idTrabajador, $anio, $mes, $tarifaHora, $horasTotales, $montoTotal, $idGenerador);
+            $stmtPlanilla->bind_param('iiiddddi', $idTrabajador, $anio, $mes, $tarifaHora, $horasTotales, $bonoManual, $montoTotal, $idGenerador);
             $okPlanilla = $stmtPlanilla->execute();
             $stmtPlanilla->close();
 
@@ -162,6 +160,7 @@ class ModeloPlanilla {
                        p.mes,
                        p.tarifa_hora,
                        p.horas_totales,
+                       p.bono_manual,
                        p.monto_total,
                        p.fecha_generacion,
                       p.aprobada,
@@ -197,6 +196,7 @@ class ModeloPlanilla {
                        p.mes,
                        p.tarifa_hora,
                        p.horas_totales,
+                       p.bono_manual,
                        p.monto_total,
                        p.fecha_generacion,
                        p.aprobada,
@@ -238,6 +238,7 @@ class ModeloPlanilla {
                                p.mes,
                                p.tarifa_hora,
                                p.horas_totales,
+                               p.bono_manual,
                                p.monto_total,
                                p.fecha_generacion,
                                p.aprobada,
@@ -421,6 +422,7 @@ class ModeloPlanilla {
                              mes INT NOT NULL,
                              tarifa_hora DECIMAL(10,2) NOT NULL,
                              horas_totales DECIMAL(10,2) NOT NULL DEFAULT 0,
+                             bono_manual DECIMAL(10,2) NOT NULL DEFAULT 0,
                              monto_total DECIMAL(12,2) NOT NULL DEFAULT 0,
                              fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                              aprobada TINYINT(1) NOT NULL DEFAULT 0,
@@ -452,6 +454,7 @@ class ModeloPlanilla {
         $conexion->query($sqlDetalles);
 
         // Compatibilidad: agrega columnas e índices si faltan en bases existentes.
+        self::asegurarColumnaPlanillas($conexion, 'bono_manual', 'DECIMAL(10,2) NOT NULL DEFAULT 0');
         self::asegurarColumnaPlanillas($conexion, 'aprobada', 'TINYINT(1) NOT NULL DEFAULT 0');
         self::asegurarColumnaPlanillas($conexion, 'aprobado_por', 'INT NULL');
         self::asegurarColumnaPlanillas($conexion, 'fecha_aprobacion', 'DATETIME NULL');

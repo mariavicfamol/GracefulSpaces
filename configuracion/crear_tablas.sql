@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS `planillas_mensuales` (
     `mes`                   INT NOT NULL,
     `tarifa_hora`           DECIMAL(10, 2) NOT NULL,
     `horas_totales`         DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    `bono_manual`           DECIMAL(10, 2) NOT NULL DEFAULT 0,
     `monto_total`           DECIMAL(12, 2) NOT NULL DEFAULT 0,
     `fecha_generacion`      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `aprobada`              TINYINT(1) NOT NULL DEFAULT 0,

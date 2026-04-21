@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $accion === '') {
         'mensaje' => 'La solicitud no pudo procesarse. Verifique el tamaño del archivo de imagen e intente nuevamente.'
     ]);
 }
-//Metodos CRUD 
+
 // BUSCAR usuario (GET o POST con ?accion=buscar)
 if ($accion === 'buscar') {
     header('Content-Type: application/json; charset=utf-8');
